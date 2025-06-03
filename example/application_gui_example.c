@@ -38,6 +38,7 @@ int main() {
     Args args0 = {GREEN};
     Args args1 = {BLUE};
     Args args2 = {ORANGE};
+    TextArgs args3 = {20, RAYWHITE, "Hello world!"};
 
     GUI_ROOT {
         GUI_VBOX {
@@ -55,7 +56,7 @@ int main() {
                     GUI {
                         SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
                         SetSize((Vector2){120.0f, 16.0f});
-                        SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
+                        SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
                     }
                 }
             }
@@ -76,7 +77,7 @@ int main() {
                         GUI {
                             SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
                             SetSize((Vector2){120.0f, 16.0f});
-                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args0});
+                            SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
                         }
                     }
                 }
@@ -94,7 +95,7 @@ int main() {
                         GUI {
                             SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
                             SetSize((Vector2){120.0f, 16.0f});
-                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
+                            SetDraw((DrawFunc){&rlautoDrawRectangleLines, (void*)&args1});
                         }
                     }
                 }

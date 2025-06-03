@@ -26,8 +26,32 @@
 #include "rlauto_layout/draw_functions.h"
 
 
+void rlautoDrawLine(Rectangle *bounds, void *args)
+{
+    Args *argData = (Args*)args;
+    DrawLine(
+            (int)bounds->x,
+            (int)bounds->y,
+            (int)bounds->x + (int)bounds->width,
+            (int)bounds->y,
+            argData->color
+    );
+}
+
 void rlautoDrawRectangle(Rectangle *bounds, void *args)
 {
     Args *argData = (Args*)args;
     DrawRectangleRec(*bounds, argData->color);
+}
+
+void rlautoDrawRectangleLines(Rectangle *bounds, void *args)
+{
+    Args *argData = (Args*)args;
+    DrawRectangleLines((int)bounds->x, (int)bounds->y, (int)bounds->width, (int)bounds->height, argData->color);
+}
+
+void rlautoDrawText(Rectangle *bounds, void *args)
+{
+    TextArgs *argData = (TextArgs*)args;
+    DrawText(argData->text, bounds->x, bounds->y, argData->fontSize, argData->color);
 }

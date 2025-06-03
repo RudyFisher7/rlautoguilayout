@@ -40,8 +40,18 @@ typedef struct args_t
     Color color;
 } Args;
 
+typedef struct text_args_t
+{
+    int fontSize;
+    Color color;
+    const char* text;
+} TextArgs;
 
+
+extern void rlautoDrawLine(Rectangle *bounds, void* args);
 extern void rlautoDrawRectangle(Rectangle *bounds, void* args);
+extern void rlautoDrawRectangleLines(Rectangle *bounds, void* args);
+extern void rlautoDrawText(Rectangle *bounds, void* args);
 
 
 #ifdef __cplusplus

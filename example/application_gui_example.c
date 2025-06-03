@@ -37,7 +37,6 @@ int main() {
     GUI_ROOT {
         GUI_VBOX {
             SetSizeFlagsBoth(SIZE_FLAGS_GROW);
-
             GUI_HBOX {
                 SetSizeFlagX(SIZE_FLAGS_GROW);
                 SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});

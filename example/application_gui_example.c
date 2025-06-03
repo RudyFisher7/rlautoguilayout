@@ -25,14 +25,19 @@
 
 
 #include "rlauto_layout/tree.h"
+#include "rlauto_layout/draw_functions.h"
 #include <raylib.h>
 
 
 int main() {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(800, 600, "Raylib Application GUI Example");
+
     char format_string_buffer[48];
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(800, 600, "Raylib + RayGUI Example");
+    Args args0 = {GREEN};
+    Args args1 = {BLUE};
+    Args args2 = {ORANGE};
 
     GUI_ROOT {
         GUI_VBOX {
@@ -42,25 +47,56 @@ int main() {
                 SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
                 SetChildSpacing(16.0f);
                 SetPaddingAll(4.0f);
-//                SetDrawFunc(build_raylib_draw_rectangle(&DrawRectangle, SKYBLUE));
+                SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args0});
 
-                const int navigationLinks = 4;
-                int navLinks0[navigationLinks] = {};
-                for (int i = 0; i < navigationLinks; ++i) {
+                const int navigationLinks0 = 4;
+                int navLinks0[navigationLinks0] = {};
+                for (int i = 0; i < navigationLinks0; ++i) {
                     GUI {
                         SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
                         SetSize((Vector2){120.0f, 16.0f});
+                        SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
                     }
                 }
             }
 
             GUI_HBOX {
                 SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+                SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
                 GUI_VBOX {
-                    SetSizeFlagX(SIZE_FLAGS_GROW);
+                    SetSizeFlags((Vector2UInt8){SIZE_FLAGS_FIT, SIZE_FLAGS_GROW});
                     SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
                     SetChildSpacing(16.0f);
                     SetPaddingAll(4.0f);
+                    SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
+
+                    const int navigationLinks1 = 4;
+                    int navLinks1[navigationLinks1] = {};
+                    for (int i = 0; i < navigationLinks1; ++i) {
+                        GUI {
+                            SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
+                            SetSize((Vector2){120.0f, 16.0f});
+                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args0});
+                        }
+                    }
+                }
+
+                GUI_VBOX {
+                    SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+                    SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
+                    SetChildSpacing(16.0f);
+                    SetPaddingAll(4.0f);
+                    SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
+
+                    const int navigationLinks2 = 4;
+                    int navLinks2[navigationLinks2] = {};
+                    for (int i = 0; i < navigationLinks2; ++i) {
+                        GUI {
+                            SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
+                            SetSize((Vector2){120.0f, 16.0f});
+                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
+                        }
+                    }
                 }
             }
         }

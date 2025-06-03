@@ -55,10 +55,21 @@ static Node* bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
 static Node* currentNode = NULL;
 
 
+#ifndef ENABLE_DEBUG
+#define ENABLE_DEBUG 1
+#endif
+
+#if ENABLE_DEBUG
+#define DEBUG_DATA int debugCurrentIndex = currentIndex; int debugTreeSize = treeSize; Node* debugCurrentNode = currentNode;
+#else
+#define DEBUG_DATA ((void)0);
+#endif
+
+
 #if RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE
 static inline Node* GetSafe(int i, const char* file, int line)
 {
-    if (i >= 0 && i < treeSize)
+    if (i >= 0 && i < RLAUTO_LAYOUT_TREE_CAPACITY)
     {
         return &tree[i];
     }
@@ -68,29 +79,43 @@ static inline Node* GetSafe(int i, const char* file, int line)
     return NULL;
 }
 
+static inline void SetSafe(int i, Node value, const char* file, int line)
+{
+    if (i >= 0 && i < RLAUTO_LAYOUT_TREE_CAPACITY)
+    {
+        tree[i] = value;
+    }
+    else
+    {
+        printf("Error: Index %d out of tree bounds at %s:%d.", i, file, line);
+    }
+}
+
 #define GET(i) GetSafe(i, __FILE__, __LINE__)
+#define SET(i, value) SetSafe(i, (value), __FILE__, __LINE__)
 #else
 #define GET(i) &tree[i]
+#define SET(i, value) tree[i] = (value)
 #endif
 
 // Forward declarations of functions that are internal to this translation unit.
-static void AssembleBFSTree();
-static void BeginRootInternal();
-static void EndRootInternal();
-static void BeginInternal();
-static void EndInternal();
+static void AssembleBFSTree(void);
+static void BeginRootInternal(void);
+static void EndRootInternal(void);
+static void BeginInternal(void);
+static void EndInternal(void);
 static void DrawInternal(Node*);
-static void UpdateFitWidths();
+static void UpdateFitWidths(void);
 static void UpdateFitWidthContainer(Node*);
-static void UpdateGrowWidths();
+static void UpdateGrowWidths(void);
 static void UpdateGrowWidthContainer(Node*);
-static void UpdateTextWrapping();
+static void UpdateTextWrapping(void);
 static void UpdateTextWrappingHelper(Node*);
-static void UpdateFitHeights();
+static void UpdateFitHeights(void);
 static void UpdateFitHeightContainer(Node*);
-static void UpdateGrowHeights();
+static void UpdateGrowHeights(void);
 static void UpdateGrowHeightContainer(Node*);
-static void UpdatePositionsAndAlignment();
+static void UpdatePositionsAndAlignment(void);
 static void UpdatePositionsAndAlignmentHelper(Node*);
 static void SetChildrenPositionsAlongX(Node*);
 static void SetChildrenPositionsAlongY(Node*);
@@ -109,16 +134,16 @@ static void SetChildrenYEndAlongY(Node*);
 static int AreEqualApproxF(float a, float b);
 
 
-static void PassThroughDraw(Rectangle bounds, void* args)
+static void PassThroughDraw(Rectangle *bounds, void *args)
 {
     (void)bounds;
     (void)args;
 }
 
 
-void BeginRoot()
+void BeginRoot(void)
 {
-    *GET(0) = (Node){
+    SET(0, ((Node){
             (Layout){0},
             (DrawFunc){&PassThroughDraw, NULL},
             NULL,
@@ -126,19 +151,19 @@ void BeginRoot()
             NULL,
             NULL,
             NULL
-    };
+    }));
 
     BeginRootInternal();
 }
 
-void EndRoot()
+void EndRoot(void)
 {
     EndRootInternal();
 }
 
-void Begin()
+void Begin(void)
 {
-    *GET(0) = (Node){
+    SET(currentIndex, ((Node){
             (Layout){0},
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -146,14 +171,14 @@ void Begin()
             NULL,
             NULL,
             NULL
-    };
+    }));
 
     BeginInternal();
 }
 
 void BeginHBox()
 {
-    *GET(0) = (Node){
+    SET(currentIndex, ((Node){
             (Layout){
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
@@ -176,14 +201,14 @@ void BeginHBox()
             NULL,
             NULL,
             NULL
-    };
+    }));
 
     BeginInternal();
 }
 
 void BeginVBox()
 {
-    *GET(0) = (Node){
+    SET(currentIndex, ((Node){
             (Layout){
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
@@ -206,7 +231,7 @@ void BeginVBox()
             NULL,
             NULL,
             NULL
-    };
+    }));
 
     BeginInternal();
 }
@@ -319,6 +344,7 @@ void SetSizeFlags(Vector2UInt8 value)
 
 void SetSizeFlagsBoth(uint8_t value)
 {
+    DEBUG_DATA
     currentNode->layout.sizeFlags = (Vector2UInt8){value, value};
 }
 
@@ -350,7 +376,7 @@ void SetText(const char* value, int textLength, float fontSize, float lineSpacin
     currentNode->layout.textLength = textLength;
 }
 
-void SetDrawFunc(DrawFunc value)
+void SetDraw(DrawFunc value)
 {
     currentNode->drawFunc = value;
 }
@@ -359,6 +385,7 @@ void SetDrawFunc(DrawFunc value)
 static void BeginRootInternal() {
     currentNode = GET(0);
     currentIndex = 1;
+    DEBUG_DATA
 }
 
 static void EndRootInternal() {
@@ -413,9 +440,11 @@ static void BeginInternal() {
     currentNode = current;
 
     ++currentIndex;
+    DEBUG_DATA
 }
 
 static void EndInternal() {
+    DEBUG_DATA
     currentNode = currentNode->parent;
 }
 
@@ -912,8 +941,8 @@ static void UpdatePositionsAndAlignmentHelper(Node* node)
 
     Node* current = node->firstChild;
     while (current)
-{
-        UpdatePositionsAndAlignment(current);
+    {
+        UpdatePositionsAndAlignmentHelper(current);
 
         current = current->rightSibling;
     }
@@ -1318,7 +1347,7 @@ void Draw()
 
 static void DrawInternal(Node* current)
 {
-    current->drawFunc.draw(current->layout.bounds);
+    current->drawFunc.draw(&current->layout.bounds, current->drawFunc.args);
 
     Node* currentChild = current->firstChild;
     while (currentChild)
@@ -1336,6 +1365,8 @@ static int AreEqualApproxF(float a, float b)
 
 
 #undef GET
+#undef SET
+#undef DEBUG_DATA
 
 #if UNDEF_CAPACITY
 #undef RLAUTO_LAYOUT_TREE_CAPACITY

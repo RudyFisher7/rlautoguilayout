@@ -91,7 +91,7 @@ typedef struct layout_t
 
 typedef struct draw_func_t
 {
-    void(*draw)(Rectangle, void*);
+    void(*draw)(Rectangle*, void*);
     void* args;
 } DrawFunc;
 

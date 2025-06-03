@@ -32,13 +32,13 @@ extern "C" {
 #endif
 
 
-extern void BeginRoot();
-extern void EndRoot();
+extern void BeginRoot(void);
+extern void EndRoot(void);
 
-extern void Begin();
-extern void BeginHBox();
-extern void BeginVBox();
-extern void End();
+extern void Begin(void);
+extern void BeginHBox(void);
+extern void BeginVBox(void);
+extern void End(void);
 
 extern void SetBounds(Rectangle value);
 extern void SetPosition(Vector2 value);
@@ -66,9 +66,9 @@ extern void SetChildAlignment(Vector2UInt8 value);
 extern void SetChildLayoutAxis(ChildLayoutAxis value);
 extern void SetText(const char* value, int textLength, float fontSize, float lineSpacing);
 extern void SetDraw(DrawFunc value);
-extern void UpdateLayout();
+extern void UpdateLayout(void);
 
-extern void Draw();
+extern void Draw(void);
 
 
 #define GUI_ROOT static int rlautoMacroIndex = 0;\
@@ -84,25 +84,6 @@ extern void Draw();
 #define GUI_VBOX BeginVBox();\
     for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, End())
 
-
-//int main()
-//{
-//    GUI_ROOT
-//    {
-//        GUI
-//        {
-//            SetPaddingAll(8.0f);
-//
-//            for (int i = 0; i < 8; ++i)
-//            {
-//                GUI
-//                {
-//                    SetMinSizeY(64.0f);
-//                }
-//            }
-//        }
-//    }
-//}
 
 #ifdef __cplusplus
 };

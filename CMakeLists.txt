@@ -63,11 +63,13 @@ endif()
 
 set(SOURCES
         source/tree.c
+        source/draw_functions.c
 )
 
 set(HEADERS
         include/rlauto_layout/tree.h
         include/rlauto_layout/type_defs.h
+        include/rlauto_layout/draw_functions.h
 )
 
 add_library(${PROJECT_NAME} STATIC

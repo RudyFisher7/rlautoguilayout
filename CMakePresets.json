@@ -1,0 +1,54 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 26 },
+  "configurePresets": [
+    {
+      "name": "release_preset",
+      "description": "Release build with C89",
+      "binaryDir": "${sourceDir}/_out/cmake-preset-build-release",
+      "cacheVariables": {
+        "CMAKE_C_STANDARD": "99",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_EXAMPLES": "OFF"
+      }
+    },
+    {
+      "name": "debug_preset",
+      "description": "Debug build with C89",
+      "binaryDir": "${sourceDir}/_out/cmake-preset-build-debug",
+      "cacheVariables": {
+        "CMAKE_C_STANDARD": "99",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_EXAMPLES": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release_preset_build",
+      "configurePreset": "release_preset",
+      "configuration": "Release",
+      "jobs": 12
+    },
+    {
+      "name": "debug_preset_build",
+      "configurePreset": "debug_preset",
+      "configuration": "Debug",
+      "jobs": 12
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "run_tests_debug",
+      "configurePreset": "debug_preset",
+      "configuration": "Debug"
+    },
+    {
+      "name": "run_tests_release",
+      "configurePreset": "release_preset",
+      "configuration": "Release"
+    }
+  ]
+}

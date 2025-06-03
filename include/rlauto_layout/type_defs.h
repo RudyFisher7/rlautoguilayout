@@ -35,7 +35,8 @@ extern "C" {
 #include <stdint.h>
 #endif
 
-typedef enum size_flags_t : uint8_t {
+typedef enum size_flags_t
+{
     SIZE_FLAGS_MIN = 0,
     SIZE_FLAGS_FIT = SIZE_FLAGS_MIN,
     SIZE_FLAGS_FIXED ,
@@ -44,7 +45,8 @@ typedef enum size_flags_t : uint8_t {
 } SizeFlags;
 
 
-typedef enum child_alignment_t : uint8_t {
+typedef enum child_alignment_t
+{
     CHILD_ALIGNMENT_MIN = 0,
     CHILD_ALIGNMENT_BEGIN = CHILD_ALIGNMENT_MIN,
     CHILD_ALIGNMENT_CENTER,
@@ -54,19 +56,22 @@ typedef enum child_alignment_t : uint8_t {
 } ChildAlignment;
 
 
-typedef enum child_layout_axis_t : uint8_t {
+typedef enum child_layout_axis_t
+{
     CHILD_LAYOUT_AXIS_MIN = 0,
     CHILD_LAYOUT_AXIS_X = CHILD_LAYOUT_AXIS_MIN,
     CHILD_LAYOUT_AXIS_Y,
     CHILD_LAYOUT_AXIS_SIZE,
 } ChildLayoutAxis;
 
-typedef struct vector2_uint8_t {
+typedef struct vector2_uint8_t
+{
     uint8_t x;
     uint8_t y;
 } Vector2UInt8;
 
-typedef struct layout_t {
+typedef struct layout_t
+{
     Rectangle bounds;
     Vector4 margins; // padding is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
     Vector4 padding; // margin is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
@@ -84,13 +89,15 @@ typedef struct layout_t {
 } Layout;
 
 
-typedef struct draw_func_t {
+typedef struct draw_func_t
+{
     void(*draw)(Rectangle);
     void* args;
 } DrawFunc;
 
 
-typedef struct node_t {
+typedef struct node_t
+{
     Layout layout;
     DrawFunc drawFunc;
     struct node_t* parent;

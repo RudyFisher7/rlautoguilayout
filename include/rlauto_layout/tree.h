@@ -62,11 +62,39 @@ extern void SetSizeFlagX(uint8_t value);
 extern void SetSizeFlagY(uint8_t value);
 extern void SetChildAlignment(Vector2UInt8 value);
 extern void SetChildLayoutAxis(ChildLayoutAxis value);
-extern void SetText(const char* value, size_t textLength, float fontSize, float lineSpacing);
+extern void SetText(const char* value, int textLength, float fontSize, float lineSpacing);
 extern void SetDraw(DrawFunc value);
 extern void UpdateLayout();
+
 extern void Draw();
 
+
+#define GUI_ROOT static int rlautoMacroIndex = 0;\
+    BeginRoot();\
+    for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, EndRoot())
+
+#define GUI Begin();\
+    for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, End())
+
+
+//int main()
+//{
+//    GUI_ROOT
+//    {
+//        GUI
+//        {
+//            SetPaddingAll(8.0f);
+//
+//            for (int i = 0; i < 8; ++i)
+//            {
+//                GUI
+//                {
+//                    SetMinSizeY(64.0f);
+//                }
+//            }
+//        }
+//    }
+//}
 
 #ifdef __cplusplus
 };

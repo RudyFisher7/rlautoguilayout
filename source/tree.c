@@ -25,83 +25,392 @@
 
 #include "rlauto_layout/tree.h"
 
+#include <ctype.h>
 #include <math.h>
+#include <float.h>
+#include <stdio.h>
 
 
-#ifndef UNDEF_SIZE
-#define UNDEF_SIZE 1
+#ifndef UNDEF_CAPACITY
+#define UNDEF_CAPACITY 1
 #endif
 
 #ifndef UNDEF_INDEX_MODE
 #define UNDEF_INDEX_MODE 1
 #endif
 
-#ifndef RLAUTO_LAYOUT_TREE_SIZE
-#define RLAUTO_LAYOUT_TREE_SIZE 32
+#ifndef RLAUTO_LAYOUT_TREE_CAPACITY
+#define RLAUTO_LAYOUT_TREE_CAPACITY 32
 #endif
 
 #ifndef RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE
 #define RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE 1
 #endif
 
+// Data used inside this translation unit.
+static int currentIndex = 0;
+static int treeSize = 0;
+static Node tree[RLAUTO_LAYOUT_TREE_CAPACITY];
+static Node* bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
+static Node* currentNode = NULL;
+
 
 #if RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE
-#define GET(i) (i >= 0 && i < RLAUTO_LAYOUT_TREE_SIZE) ? &tree[i] : NULL
+static inline Node* GetSafe(int i, const char* file, int line)
+{
+    if (i >= 0 && i < treeSize)
+    {
+        return &tree[i];
+    }
+
+    printf("Error: Index %d out of tree bounds at %s:%d.", i, file, line);
+
+    return NULL;
+}
+
+#define GET(i) GetSafe(i, __FILE__, __LINE__)
 #else
 #define GET(i) &tree[i]
 #endif
 
-
-static const int TreeSize = RLAUTO_LAYOUT_TREE_SIZE;
-static Node tree[RLAUTO_LAYOUT_TREE_SIZE];
-static Node* bFSTree[RLAUTO_LAYOUT_TREE_SIZE];
-
-
+// Forward declarations of functions that are internal to this translation unit.
+static void AssembleBFSTree();
+static void BeginRootInternal();
+static void EndRootInternal();
+static void BeginInternal();
+static void EndInternal();
+static void DrawInternal(Node*);
+static void UpdateFitWidths();
 static void UpdateFitWidthContainer(Node*);
+static void UpdateGrowWidths();
 static void UpdateGrowWidthContainer(Node*);
+static void UpdateTextWrapping();
+static void UpdateTextWrappingHelper(Node*);
+static void UpdateFitHeights();
+static void UpdateFitHeightContainer(Node*);
+static void UpdateGrowHeights();
+static void UpdateGrowHeightContainer(Node*);
+static void UpdatePositionsAndAlignment();
+static void UpdatePositionsAndAlignmentHelper(Node*);
+static void SetChildrenPositionsAlongX(Node*);
+static void SetChildrenPositionsAlongY(Node*);
+static void SetChildrenXBeginAlongX(Node*);
+static void SetChildrenYBeginAlongX(Node*);
+static void SetChildrenXBeginAlongY(Node*);
+static void SetChildrenYBeginAlongY(Node*);
+static void SetChildrenXCenterAlongX(Node*);
+static void SetChildrenYCenterAlongX(Node*);
+static void SetChildrenXCenterAlongY(Node*);
+static void SetChildrenYCenterAlongY(Node*);
+static void SetChildrenXEndAlongX(Node*);
+static void SetChildrenYEndAlongX(Node*);
+static void SetChildrenXEndAlongY(Node*);
+static void SetChildrenYEndAlongY(Node*);
+static int AreEqualApproxF(float a, float b);
 
 
+void BeginRoot()
+{
+    *GET(0) = (Node){
+            (Layout){},
+            (DrawFunc){},
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL
+    };
 
-static void DrawInternal(Node* current) {
-    current->drawFunc.draw(current->layout.bounds);
+    BeginRootInternal();
+}
 
-    Node* currentChild = current->firstChild;
-    while (currentChild) {
-        DrawInternal(currentChild);
-        currentChild = currentChild->rightSibling;
+void EndRoot()
+{
+    EndRootInternal();
+}
+
+void Begin()
+{
+    *GET(0) = (Node){
+            (Layout){},
+            (DrawFunc){},
+            currentNode,
+            NULL,
+            NULL,
+            NULL,
+            NULL
+    };
+
+    BeginInternal();
+}
+
+void End()
+{
+    EndInternal();
+}
+
+void SetBounds(Rectangle value)
+{
+    currentNode->layout.bounds = value;
+}
+
+void SetPosition(Vector2 value)
+{
+    currentNode->layout.bounds.x = value.x;
+    currentNode->layout.bounds.y = value.y;
+}
+
+void SetSize(Vector2 value)
+{
+    currentNode->layout.bounds.width = value.x;
+    currentNode->layout.bounds.height = value.y;
+}
+
+void SetMargins(Vector4 value)
+{
+    currentNode->layout.margins = value;
+}
+
+void SetMarginsAll(float value)
+{
+    currentNode->layout.margins = (Vector4){value, value, value, value};
+}
+
+void SetMarginsX(Vector2 value)
+{
+    currentNode->layout.margins.y = value.y;
+    currentNode->layout.margins.w = value.x;
+}
+
+void SetMarginsY(Vector2 value)
+{
+    currentNode->layout.margins.x = value.x;
+    currentNode->layout.margins.z = value.y;
+}
+
+void SetPadding(Vector4 value)
+{
+    currentNode->layout.padding = value;
+}
+
+void SetPaddingAll(float value)
+{
+    currentNode->layout.padding = (Vector4){value, value, value, value};
+}
+
+void SetPaddingX(Vector2 value)
+{
+    currentNode->layout.padding.y = value.y;
+    currentNode->layout.padding.w = value.x;
+}
+
+void SetPaddingY(Vector2 value)
+{
+    currentNode->layout.padding.x = value.x;
+    currentNode->layout.padding.z = value.y;
+}
+
+void SetMinSize(Vector2 value)
+{
+    currentNode->layout.minSize = value;
+}
+
+void SetMinSizeX(float value)
+{
+    currentNode->layout.minSize.x = value;
+}
+
+void SetMinSizeY(float value)
+{
+    currentNode->layout.minSize.y = value;
+}
+
+void SetMaxSize(Vector2 value)
+{
+    currentNode->layout.maxSize = value;
+}
+
+void SetMaxSizeX(float value)
+{
+    currentNode->layout.maxSize.x = value;
+}
+
+void SetMaxSizeY(float value)
+{
+    currentNode->layout.maxSize.y = value;
+}
+
+void SetChildSpacing(float value)
+{
+    currentNode->layout.childSpacing = value;
+}
+
+void SetSizeFlags(Vector2UInt8 value)
+{
+    currentNode->layout.sizeFlags = value;
+}
+
+void SetSizeFlagsBoth(uint8_t value)
+{
+    currentNode->layout.sizeFlags = (Vector2UInt8){value, value};
+}
+
+void SetSizeFlagX(uint8_t value)
+{
+    currentNode->layout.sizeFlags.x = value;
+}
+
+void SetSizeFlagY(uint8_t value)
+{
+    currentNode->layout.sizeFlags.y = value;
+}
+
+void SetChildAlignment(Vector2UInt8 value)
+{
+    currentNode->layout.childAlignment = value;
+}
+
+void SetChildLayoutAxis(ChildLayoutAxis value)
+{
+    currentNode->layout.childLayoutAxis = value;
+}
+
+void SetText(const char* value, int textLength, float fontSize, float lineSpacing)
+{
+    currentNode->layout.text = value;
+    currentNode->layout.fontSize = fontSize;
+    currentNode->layout.lineSpacing = lineSpacing;
+    currentNode->layout.textLength = textLength;
+}
+
+void SetDrawFunc(DrawFunc value)
+{
+    currentNode->drawFunc = value;
+}
+
+
+static void BeginRootInternal() {
+    currentNode = GET(0);
+    currentIndex = 1;
+}
+
+static void EndRootInternal() {
+    currentNode = NULL;
+    treeSize = currentIndex;
+    currentIndex = 0;
+
+    AssembleBFSTree();
+}
+
+static void AssembleBFSTree() {
+    int size = 1;
+    bFSTree[0] = GET(0);
+    int i = 0;
+    while (i < size) {
+        Node* child = bFSTree[i]->firstChild;
+        while (child) {
+            bFSTree[size++] = child;
+
+            child = child->rightSibling;
+        }
+
+        ++i;
     }
 }
 
-static void UpdateFitWidths() {
-    int last_index = TreeSize - 1;
+static void BeginInternal() {
+    Node* current = GET(currentIndex);
 
-    for (int i = last_index; i > 0; --i) {
+    // if there is a current parent
+    if (currentNode) {
+
+        // if the parent has no children, set its first one to the current node
+        if (!currentNode->firstChild) {
+            currentNode->firstChild = current;
+        }
+
+        // if the parent has >= 1 children
+        if (currentNode->lastChild) {
+            // set the parent's last child's right sibling to the current node
+            currentNode->lastChild->rightSibling = current;
+        }
+
+        // set the current node's left sibling to the parent's last child
+        current->leftSibling = currentNode->lastChild;
+
+        // set the parent's last child to the current node
+        currentNode->lastChild = current;
+    }
+
+    // set the current parent to the current node for the next Begin() call
+    currentNode = current;
+
+    ++currentIndex;
+}
+
+static void EndInternal() {
+    currentNode = currentNode->parent;
+}
+
+
+void UpdateLayout()
+{
+    Layout* rootLayout = &GET(0)->layout;
+    rootLayout->minSize = (Vector2){0.0f, 0.0f};
+    rootLayout->maxSize = (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()};
+    rootLayout->bounds = (Rectangle){0.0f, 0.0f, (float)GetScreenWidth(), (float)GetScreenHeight()};
+    rootLayout->sizeFlags = (Vector2UInt8){SIZE_FLAGS_FIXED, SIZE_FLAGS_FIXED};
+
+    // note:: update fixed widths would go here, but is unnecessary since the bounds' widths are just the values set at design time
+    UpdateFitWidths();
+    UpdateGrowWidths();
+    // note:: update fixed heights would go here, but is unnecessary since the bounds' heights are just the values set at design time
+    UpdateTextWrapping();
+    UpdateFitHeights();
+    UpdateGrowHeights();
+    UpdatePositionsAndAlignment();
+}
+
+static void UpdateFitWidths()
+{
+    int lastIndex = treeSize - 1;
+
+    for (int i = lastIndex; i > 0; --i)
+    {
         Node* current = GET(i);
 
-        if (current->firstChild) {
-            if (current->layout.sizeFlags.x != SIZE_FLAGS_FIXED) {
+        if (current->firstChild)
+        {
+            if (current->layout.sizeFlags.x != SIZE_FLAGS_FIXED)
+            {
                 UpdateFitWidthContainer(current);
             }
-        } else {
+        }
+        else
+        {
             // leaf
         }
     }
 
     // set the root here because its index is 0 and this would cause bit overflow in the for loop above.
     Node* root = GET(0);
-    if (root->layout.sizeFlags.x != SIZE_FLAGS_FIXED) {
+    if (root->layout.sizeFlags.x != SIZE_FLAGS_FIXED)
+    {
         UpdateFitWidthContainer(root);
     }
 }
 
-static void UpdateFitWidthContainer(Node* node) {
+static void UpdateFitWidthContainer(Node* node)
+{
     float width = 0.0f;
     node->layout.minSize.x = 0.0f;
     Node* current = node->firstChild;
-    if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_X) {
+    if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_X)
+    {
         // add up all the siblings' widths, including their margins on both sides
         int childCount = 0;
-        while (current) {
+        while (current)
+        {
             Layout* layout = &current->layout;
             width += layout->bounds.width + layout->margins.y + layout->margins.w;
 
@@ -113,11 +422,14 @@ static void UpdateFitWidthContainer(Node* node) {
         }
 
         // add the total spacing from the parent to the total width
-        width += node->layout.childSpacing * (float)(childCount - 1u);
+        width += node->layout.childSpacing * (float)(childCount - 1);
 
-    } else {
+    }
+    else
+    {
         // get the max width out of each child, including their padding on both sides
-        while (current) {
+        while (current)
+        {
             Layout* layout = &current->layout;
             width = fmaxf(layout->bounds.width + layout->margins.y + layout->margins.w, width);
 
@@ -128,32 +440,38 @@ static void UpdateFitWidthContainer(Node* node) {
     width += node->layout.padding.y + node->layout.padding.w;
 
     // set the parent's width to the calculated width
-//        node->data.layout.bounds.width = width;
+//        node->layout.bounds.width = width;
     node->layout.bounds.width = fmaxf(width, node->layout.minSize.x);
 }
 
-static void UpdateGrowWidths() {
-    for (int i = 0; i < TreeSize; ++i) {
+static void UpdateGrowWidths()
+{
+    for (int i = 0; i < treeSize; ++i)
+    {
         Node* current = bFSTree[i];
 
-        if (current->firstChild) {
+        if (current->firstChild)
+        {
             UpdateGrowWidthContainer(current);
         }
     }
 }
 
-static void UpdateGrowWidthContainer(Node* node) {
-    float parent_remaining_width = (
+static void UpdateGrowWidthContainer(Node* node)
+{
+    float parentRemainingWidth = (
             node->layout.bounds.width
             - node->layout.padding.w
             - node->layout.padding.y
     );
 
-    if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_X) {
+    if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_X)
+    {
         Node *currentChild = node->firstChild;
         int childCount = 0;
-        while (currentChild) {
-            parent_remaining_width -= (
+        while (currentChild)
+        {
+            parentRemainingWidth -= (
                     currentChild->layout.bounds.width
                     + currentChild->layout.margins.w
                     + currentChild->layout.margins.y
@@ -164,671 +482,796 @@ static void UpdateGrowWidthContainer(Node* node) {
             currentChild = currentChild->rightSibling;
         }
 
-        float child_spacing = node->layout.childSpacing * (float)(childCount - 1u);
-        parent_remaining_width -= child_spacing;
+        float childSpacing = node->layout.childSpacing * (float)(childCount - 1);
+        parentRemainingWidth -= childSpacing;
 
         int growableChildCount = 0;
         currentChild = node->firstChild;
-        while (currentChild) {
-            if (currentChild->layout.sizeFlags.x == SIZE_FLAGS_GROW) {
+        while (currentChild)
+        {
+            if (currentChild->layout.sizeFlags.x == SIZE_FLAGS_GROW)
+            {
                 ++growableChildCount;
             }
 
-            current_child = current_child->right_sibling;
+            currentChild = currentChild->rightSibling;
         }
 
-        while (parent_remaining_width > FLT_EPSILON && growable_child_count > 0) {
-            current_child = node->first_child;
-            float smallest_width = FLT_MAX;
-            float second_smallest_width = FLT_MAX;
-            float width_to_add = parent_remaining_width;
-            while (current_child) {
-                if (current_child->data.layout.size_flags.x == SIZE_FLAGS_GROW) {
-                    if (current_child->data.layout.bounds.width < smallest_width && current_child->data.layout.bounds.width < current_child->data.layout.max_size.x) {
-                        second_smallest_width = smallest_width;
-                        smallest_width = current_child->data.layout.bounds.width;
+        while (parentRemainingWidth > FLT_EPSILON && growableChildCount > 0)
+        {
+            currentChild = node->firstChild;
+            float smallestWidth = FLT_MAX;
+            float secondSmallestWidth = FLT_MAX;
+            float widthToAdd = parentRemainingWidth;
+            while (currentChild)
+            {
+                if (currentChild->layout.sizeFlags.x == SIZE_FLAGS_GROW)
+                {
+                    if (currentChild->layout.bounds.width < smallestWidth && currentChild->layout.bounds.width < currentChild->layout.maxSize.x)
+                    {
+                        secondSmallestWidth = smallestWidth;
+                        smallestWidth = currentChild->layout.bounds.width;
                     }
 
-                    if (current_child->data.layout.bounds.width > smallest_width && current_child->data.layout.bounds.width < current_child->data.layout.max_size.x) {
-                        second_smallest_width = fminf(second_smallest_width, current_child->data.layout.bounds.width);
-                        width_to_add = second_smallest_width - smallest_width;
+                    if (currentChild->layout.bounds.width > smallestWidth && currentChild->layout.bounds.width < currentChild->layout.maxSize.x)
+                    {
+                        secondSmallestWidth = fminf(secondSmallestWidth, currentChild->layout.bounds.width);
+                        widthToAdd = secondSmallestWidth - smallestWidth;
                     }
                 }
 
-                current_child = current_child->right_sibling;
+                currentChild = currentChild->rightSibling;
             }
 
-            width_to_add = fminf(width_to_add, parent_remaining_width / (float)growable_child_count);
+            widthToAdd = fminf(widthToAdd, parentRemainingWidth / (float)growableChildCount);
 
-            current_child = node->first_child;
-            while (current_child) {
-                if (current_child->data.layout.size_flags.x == SIZE_FLAGS_GROW) {
-                    if (FloatEquals(current_child->data.layout.bounds.width, smallest_width) && current_child->data.layout.bounds.width < current_child->data.layout.max_size.x) {
-                        float clamped_width_to_add = fminf(width_to_add, current_child->data.layout.max_size.x - current_child->data.layout.bounds.width);
-                        current_child->data.layout.bounds.width += clamped_width_to_add;
-                        parent_remaining_width -= clamped_width_to_add;
+            currentChild = node->firstChild;
+            while (currentChild)
+            {
+                if (currentChild->layout.sizeFlags.x == SIZE_FLAGS_GROW)
+                {
+                    if (AreEqualApproxF(currentChild->layout.bounds.width, smallestWidth) && currentChild->layout.bounds.width < currentChild->layout.maxSize.x)
+                    {
+                        float clampedWidthToAdd = fminf(widthToAdd, currentChild->layout.maxSize.x - currentChild->layout.bounds.width);
+                        currentChild->layout.bounds.width += clampedWidthToAdd;
+                        parentRemainingWidth -= clampedWidthToAdd;
 
-                        if (FloatEquals(current_child->data.layout.bounds.width, current_child->data.layout.max_size.x)) {
-                            --growable_child_count;
+                        if (AreEqualApproxF(currentChild->layout.bounds.width, currentChild->layout.maxSize.x)) {
+                            --growableChildCount;
                         }
                     }
                 }
 
-                current_child = current_child->right_sibling;
+                currentChild = currentChild->rightSibling;
             }
         }
     } else {
-        GuiNode *current_child = node->first_child;
-        while (current_child) {
-            if (current_child->data.layout.size_flags.x == SIZE_FLAGS_GROW) {
-                current_child->data.layout.bounds.width += (
-                        parent_remaining_width
-                        - current_child->data.layout.bounds.width
-                        - current_child->data.layout.margins.w
-                        - current_child->data.layout.margins.y
+        Node *currentChild = node->firstChild;
+        while (currentChild)
+        {
+            if (currentChild->layout.sizeFlags.x == SIZE_FLAGS_GROW)
+            {
+                currentChild->layout.bounds.width += (
+                        parentRemainingWidth
+                        - currentChild->layout.bounds.width
+                        - currentChild->layout.margins.w
+                        - currentChild->layout.margins.y
                 );
 
-                current_child->data.layout.bounds.width = fminf(
-                        current_child->data.layout.bounds.width,
-                        current_child->data.layout.max_size.x
+                currentChild->layout.bounds.width = fminf(
+                        currentChild->layout.bounds.width,
+                        currentChild->layout.maxSize.x
                 );
             }
 
-            current_child = current_child->right_sibling;
+            currentChild = currentChild->rightSibling;
         }
     }
 }
 
-static void _update_text_wrapping() {
-    for (int i = 0; i < this->_arena_size; ++i) {
-        GuiNode* current = this->_bfs_queue[i];
+static void UpdateTextWrapping()
+{
+    for (int i = 0; i < treeSize; ++i)
+    {
+        Node* current = bFSTree[i];
 
-        if (current->data.layout.text) {
-            _update_text_wrapping(current);
+        if (current->layout.text)
+        {
+            UpdateTextWrappingHelper(current);
         }
     }
 }
 
-static void _update_text_wrapping(GuiNode* node) {
+static void UpdateTextWrappingHelper(Node* node)
+{
     // fixme:: this algorithm only works when all codepoints are 1 byte/char. utf-8 uses variable length codepoints
     //use font size for the width for now.
     // usually you would find the width of each codepoint
     // but that might cause a cache miss due to accessing heap memory
-    float font_width = node->data.layout.font_size;
+    float fontWidth = node->layout.fontSize;
 
     //font width * char count = width
-    int line_count = 1;
-    int char_count_per_line = (int)(node->data.layout.bounds.width / font_width);
-    int i = char_count_per_line - 1;
-    int previous_i = -1;
-    while (i > previous_i && i < node->data.layout.text_length) {
-        while (i > previous_i && !isspace(node->data.layout.text[i])) {
+    int lineCount = 1;
+    int charCountPerLine = (int)(node->layout.bounds.width / fontWidth);
+    int i = charCountPerLine - 1;
+    int previousI = -1;
+    while (i > previousI && i < node->layout.textLength)
+    {
+        while (i > previousI && !isspace(node->layout.text[i]))
+        {
             --i;
         }
 
-        if (i > previous_i) {
-            ++line_count;
-            previous_i = i;
-            i += char_count_per_line;
+        if (i > previousI)
+        {
+            ++lineCount;
+            previousI = i;
+            i += charCountPerLine;
         }
     }
 
-    node->data.layout.bounds.height = fminf(
+    node->layout.bounds.height = fminf(
             (float)(
-                    (node->data.layout.font_size * line_count)
-                    + (node->data.layout.line_spacing * (line_count - 1))
+                    (node->layout.fontSize * lineCount)
+                    + (node->layout.lineSpacing * (lineCount - 1))
             ),
-            node->data.layout.max_size.y
+            node->layout.maxSize.y
     );
 }
 
-static void _update_fit_heights() {
-    int last_index = this->_arena_size - 1u;
+static void UpdateFitHeights()
+{
+    int lastIndex = treeSize - 1;
 
-    for (int i = last_index; i > 0; --i) {
-        GuiNode* current = &this->_get(i);
+    for (int i = lastIndex; i > 0; --i)
+    {
+        Node* current = GET(i);
 
-        if (current->first_child) {
-            if (current->data.layout.size_flags.y != SIZE_FLAGS_FIXED) {
-                _update_fit_height_container(current);
+        if (current->firstChild)
+        {
+            if (current->layout.sizeFlags.y != SIZE_FLAGS_FIXED)
+            {
+                UpdateFitHeightContainer(current);
             }
-        } else {
+        }
+        else
+        {
             // leaf
         }
     }
 
     // set the root here because its index is 0 and this would cause bit overflow in the for loop above.
-    GuiNode* root = this->Root();
-    if (root->data.layout.size_flags.y != SIZE_FLAGS_FIXED) {
-        _update_fit_height_container(root);
+    Node* root = GET(0);
+    if (root->layout.sizeFlags.y != SIZE_FLAGS_FIXED)
+    {
+        UpdateFitHeightContainer(root);
     }
 }
 
-static void _update_fit_height_container(GuiNode* node) {
+static void UpdateFitHeightContainer(Node* node)
+{
     float height = 0.0f;
-    node->data.layout.min_size.y = 0.0f;
-    GuiNode* current = node->first_child;
-    if (node->data.layout.child_layout_axis == CHILD_LAYOUT_AXIS_Y) {
+    node->layout.minSize.y = 0.0f;
+    Node* current = node->firstChild;
+    if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_Y)
+    {
         // add up all the siblings' heights, including their margins on both top and bottom
-        int child_count = 0;
-        while (current) {
-            Layout* layout = &current->data.layout;
+        int childCount = 0;
+        while (current)
+        {
+            Layout* layout = &current->layout;
             height += layout->bounds.height + layout->margins.x + layout->margins.z;
 
             // propogate min heights up the tree
-            node->data.layout.min_size.y += layout->min_size.x + layout->margins.x + layout->margins.y;
-            ++child_count;
+            node->layout.minSize.y += layout->minSize.x + layout->margins.x + layout->margins.y;
+            ++childCount;
 
-            current = current->right_sibling;
+            current = current->rightSibling;
         }
 
         // add the total spacing from the parent to the total width
-        height += node->data.layout.child_spacing * (float)(child_count - 1u);
+        height += node->layout.childSpacing * (float)(childCount - 1);
 
-    } else {
+    }
+    else
+    {
         // get the max height out of each child, including their padding on both top and bottom
-        while (current) {
-            Layout* layout = &current->data.layout;
+        while (current)
+        {
+            Layout* layout = &current->layout;
             height = fmaxf(layout->bounds.height + layout->margins.x + layout->margins.z, height);
 
-            current = current->right_sibling;
+            current = current->rightSibling;
         }
     }
 
-    height += node->data.layout.padding.x + node->data.layout.padding.z;
+    height += node->layout.padding.x + node->layout.padding.z;
 
     // set the parent's height to the calculated height
-//        node->data.layout.bounds.width = height;
-    node->data.layout.bounds.height = fmaxf(height, node->data.layout.min_size.y);
+//        node->layout.bounds.width = height;
+    node->layout.bounds.height = fmaxf(height, node->layout.minSize.y);
 }
 
-static void _update_grow_heights() {
-    for (int i = 0; i < this->_arena_size; ++i) {
-        GuiNode* current = this->_bfs_queue[i];
+static void UpdateGrowHeights()
+{
+    for (int i = 0; i < treeSize; ++i)
+    {
+        Node* current = bFSTree[i];
 
-        if (current->first_child) {
-            _update_grow_height_container(this->_bfs_queue[i]);
+        if (current->firstChild)
+        {
+            UpdateGrowHeightContainer(bFSTree[i]);
         }
     }
 }
 
-static void _update_grow_height_container(GuiNode* node) {
-    float parent_remaining_height = (
-            node->data.layout.bounds.height
-            - node->data.layout.padding.x
-            - node->data.layout.padding.z
+static void UpdateGrowHeightContainer(Node* node)
+{
+    float parentRemainingHeight = (
+            node->layout.bounds.height
+            - node->layout.padding.x
+            - node->layout.padding.z
     );
 
-    if (node->data.layout.child_layout_axis == CHILD_LAYOUT_AXIS_Y) {
-        GuiNode *current_child = node->first_child;
-        int child_count = 0;
-        while (current_child) {
-            parent_remaining_height -= (
-                    current_child->data.layout.bounds.height
-                    + current_child->data.layout.margins.x
-                    + current_child->data.layout.margins.z
+    if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_Y)
+    {
+        Node *currentChild = node->firstChild;
+        int childCount = 0;
+        while (currentChild)
+        {
+            parentRemainingHeight -= (
+                    currentChild->layout.bounds.height
+                    + currentChild->layout.margins.x
+                    + currentChild->layout.margins.z
             );
 
-            ++child_count;
+            ++childCount;
 
-            current_child = current_child->right_sibling;
+            currentChild = currentChild->rightSibling;
         }
 
-        float child_spacing = node->data.layout.child_spacing * (float) (child_count - 1u);
-        parent_remaining_height -= child_spacing;
+        float childSpacing = node->layout.childSpacing * (float) (childCount - 1);
+        parentRemainingHeight -= childSpacing;
 
-        int growable_child_count = 0;
-        current_child = node->first_child;
-        while (current_child) {
-            if (current_child->data.layout.size_flags.y == SIZE_FLAGS_GROW) {
-                ++growable_child_count;
+        int growableChildCount = 0;
+        currentChild = node->firstChild;
+        while (currentChild)
+        {
+            if (currentChild->layout.sizeFlags.y == SIZE_FLAGS_GROW)
+            {
+                ++growableChildCount;
             }
 
-            current_child = current_child->right_sibling;
+            currentChild = currentChild->rightSibling;
         }
 
-        while (parent_remaining_height > FLT_EPSILON && growable_child_count > 0) {
-            current_child = node->first_child;
-            float smallest_height = FLT_MAX;
-            float second_smallest_height = FLT_MAX;
-            float height_to_add = parent_remaining_height;
-            while (current_child) {
-                if (current_child->data.layout.size_flags.y == SIZE_FLAGS_GROW) {
-                    if (current_child->data.layout.bounds.height < smallest_height && current_child->data.layout.bounds.height < current_child->data.layout.max_size.y) {
-                        second_smallest_height = smallest_height;
-                        smallest_height = current_child->data.layout.bounds.height;
+        while (parentRemainingHeight > FLT_EPSILON && growableChildCount > 0)
+        {
+            currentChild = node->firstChild;
+            float smallestHeight = FLT_MAX;
+            float secondSmallestHeight = FLT_MAX;
+            float heightToAdd = parentRemainingHeight;
+            while (currentChild)
+            {
+                if (currentChild->layout.sizeFlags.y == SIZE_FLAGS_GROW)
+                {
+                    if (currentChild->layout.bounds.height < smallestHeight && currentChild->layout.bounds.height < currentChild->layout.maxSize.y)
+                    {
+                        secondSmallestHeight = smallestHeight;
+                        smallestHeight = currentChild->layout.bounds.height;
                     }
 
-                    if (current_child->data.layout.bounds.height > smallest_height && current_child->data.layout.bounds.height < current_child->data.layout.max_size.y) {
-                        second_smallest_height = fminf(second_smallest_height, current_child->data.layout.bounds.height);
-                        height_to_add = second_smallest_height - smallest_height;
+                    if (currentChild->layout.bounds.height > smallestHeight && currentChild->layout.bounds.height < currentChild->layout.maxSize.y)
+                    {
+                        secondSmallestHeight = fminf(secondSmallestHeight, currentChild->layout.bounds.height);
+                        heightToAdd = secondSmallestHeight - smallestHeight;
                     }
                 }
 
-                current_child = current_child->right_sibling;
+                currentChild = currentChild->rightSibling;
             }
 
-            height_to_add = fminf(height_to_add, parent_remaining_height / (float)growable_child_count);
+            heightToAdd = fminf(heightToAdd, parentRemainingHeight / (float)growableChildCount);
 
-            current_child = node->first_child;
-            while (current_child) {
-                if (current_child->data.layout.size_flags.y == SIZE_FLAGS_GROW) {
-                    if (FloatEquals(current_child->data.layout.bounds.height, smallest_height) && current_child->data.layout.bounds.height < current_child->data.layout.max_size.y) {
-                        float clamped_width_to_add = fminf(height_to_add, current_child->data.layout.max_size.y - current_child->data.layout.bounds.height);
-                        current_child->data.layout.bounds.height += clamped_width_to_add;
-                        parent_remaining_height -= clamped_width_to_add;
+            currentChild = node->firstChild;
+            while (currentChild)
+            {
+                if (currentChild->layout.sizeFlags.y == SIZE_FLAGS_GROW)
+                {
+                    if (AreEqualApproxF(currentChild->layout.bounds.height, smallestHeight) && currentChild->layout.bounds.height < currentChild->layout.maxSize.y)
+                    {
+                        float clampedWidthToAdd = fminf(heightToAdd, currentChild->layout.maxSize.y - currentChild->layout.bounds.height);
+                        currentChild->layout.bounds.height += clampedWidthToAdd;
+                        parentRemainingHeight -= clampedWidthToAdd;
 
-                        if (FloatEquals(current_child->data.layout.bounds.height, current_child->data.layout.max_size.y)) {
-                            --growable_child_count;
+                        if (AreEqualApproxF(currentChild->layout.bounds.height, currentChild->layout.maxSize.y))
+                        {
+                            --growableChildCount;
                         }
                     }
                 }
 
-                current_child = current_child->right_sibling;
+                currentChild = currentChild->rightSibling;
             }
         }
-    } else {
-        GuiNode *current_child = node->first_child;
-        while (current_child) {
-            if (current_child->data.layout.size_flags.y == SIZE_FLAGS_GROW) {
-                current_child->data.layout.bounds.height += (
-                        parent_remaining_height
-                        - current_child->data.layout.bounds.height
-                        - current_child->data.layout.margins.x
-                        - current_child->data.layout.margins.z
+    }
+    else
+    {
+        Node *currentChild = node->firstChild;
+        while (currentChild)
+        {
+            if (currentChild->layout.sizeFlags.y == SIZE_FLAGS_GROW)
+            {
+                currentChild->layout.bounds.height += (
+                        parentRemainingHeight
+                        - currentChild->layout.bounds.height
+                        - currentChild->layout.margins.x
+                        - currentChild->layout.margins.z
                 );
 
-                current_child->data.layout.bounds.height = fminf(
-                        current_child->data.layout.bounds.height,
-                        current_child->data.layout.max_size.y
+                currentChild->layout.bounds.height = fminf(
+                        currentChild->layout.bounds.height,
+                        currentChild->layout.maxSize.y
                 );
             }
 
-            current_child = current_child->right_sibling;
+            currentChild = currentChild->rightSibling;
         }
     }
 }
 
-static void _update_positions_and_alignment() {
-    GuiNode* root = this->Root();
-    _update_positions_and_alignment(root);
+static void UpdatePositionsAndAlignment()
+{
+    Node* root = GET(0);
+    UpdatePositionsAndAlignmentHelper(root);
 }
 
-static void _update_positions_and_alignment(GuiNode* node) {
-    if (node->first_child) {
-        switch (node->data.layout.child_layout_axis) {
+static void UpdatePositionsAndAlignmentHelper(Node* node)
+{
+    if (node->firstChild)
+{
+        switch (node->layout.childLayoutAxis)
+{
             case CHILD_LAYOUT_AXIS_X:
-                _set_children_positions_along_x(node);
+                SetChildrenPositionsAlongX(node);
                 break;
             case CHILD_LAYOUT_AXIS_Y:
-                _set_children_positions_along_y(node);
+                SetChildrenPositionsAlongY(node);
                 break;
             default:
                 break;
         }
     }
 
-    GuiNode* current = node->first_child;
-    while (current) {
-        _update_positions_and_alignment(current);
+    Node* current = node->firstChild;
+    while (current)
+{
+        UpdatePositionsAndAlignment(current);
 
-        current = current->right_sibling;
+        current = current->rightSibling;
     }
 }
 
-static void _set_children_positions_along_x(GuiNode* current) {
-    switch (current->data.layout.child_alignment.x) {
+static void SetChildrenPositionsAlongX(Node* current)
+{
+    switch (current->layout.childAlignment.x)
+{
         case CHILD_ALIGNMENT_BEGIN:
-            _set_children_x_begin_along_x(current);
+            SetChildrenXBeginAlongX(current);
             break;
         case CHILD_ALIGNMENT_CENTER:
-            _set_children_x_center_along_x(current);
+            SetChildrenXCenterAlongX(current);
             break;
         case CHILD_ALIGNMENT_END:
-            _set_children_x_end_along_x(current);
+            SetChildrenXEndAlongX(current);
             break;
         case CHILD_ALIGNMENT_RADIAL:
             break;
         default:
-            _set_children_x_begin_along_x(current);
+            SetChildrenXBeginAlongX(current);
             break;
     }
 
-    switch (current->data.layout.child_alignment.y) {
+    switch (current->layout.childAlignment.y)
+{
         case CHILD_ALIGNMENT_BEGIN:
-            _set_children_y_begin_along_x(current);
+            SetChildrenYBeginAlongX(current);
             break;
         case CHILD_ALIGNMENT_CENTER:
-            _set_children_y_center_along_x(current);
+            SetChildrenYCenterAlongX(current);
             break;
         case CHILD_ALIGNMENT_END:
-            _set_children_y_end_along_x(current);
+            SetChildrenYEndAlongX(current);
             break;
         case CHILD_ALIGNMENT_RADIAL:
             break;
         default:
-            _set_children_y_begin_along_x(current);
+            SetChildrenYBeginAlongX(current);
             break;
     }
 }
 
-static void _set_children_x_begin_along_x(GuiNode* current) {
-    int child_count = 0;
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        ++child_count;
+static void SetChildrenXBeginAlongX(Node* current)
+{
+    int childCount = 0;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        ++childCount;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 
-    float current_x = current->data.layout.bounds.x + current->data.layout.padding.w;
+    float currentX = current->layout.bounds.x + current->layout.padding.w;
 
-    current_child = current->first_child;
-    while (current_child) {
-        float left_padding_adjustment_x = current_child->data.layout.margins.w;
-        if (current_child->left_sibling) {
-            left_padding_adjustment_x += current_child->left_sibling->data.layout.margins.y + current->data.layout.child_spacing;
+    currentChild = current->firstChild;
+    while (currentChild)
+    {
+        float leftPaddingAdjustmentX = currentChild->layout.margins.w;
+        if (currentChild->leftSibling)
+        {
+            leftPaddingAdjustmentX += currentChild->leftSibling->layout.margins.y + current->layout.childSpacing;
         }
 
-        current_child->data.layout.bounds.x = current_x + left_padding_adjustment_x;
-        current_x += current_child->data.layout.bounds.width + left_padding_adjustment_x;
+        currentChild->layout.bounds.x = currentX + leftPaddingAdjustmentX;
+        currentX += currentChild->layout.bounds.width + leftPaddingAdjustmentX;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_y_begin_along_x(GuiNode* current) {
-    float current_y = current->data.layout.bounds.y + current->data.layout.padding.x;
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        float top_padding_adjustment = current_child->data.layout.margins.x;
-        current_child->data.layout.bounds.y = current_y + top_padding_adjustment;
+static void SetChildrenYBeginAlongX(Node* current)
+{
+    float currentY = current->layout.bounds.y + current->layout.padding.x;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        float topPaddingAdjustment = currentChild->layout.margins.x;
+        currentChild->layout.bounds.y = currentY + topPaddingAdjustment;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_x_center_along_x(GuiNode* current) {
-    float child_widths = 0.0f;
-    int child_count = 0;
-    GuiNode *current_child = current->first_child;
+static void SetChildrenXCenterAlongX(Node* current)
+{
+    float childWidths = 0.0f;
+    int childCount = 0;
+    Node *currentChild = current->firstChild;
 
-    child_widths += current->data.layout.padding.y + current->data.layout.padding.w;
-    while (current_child) {
-        child_widths += (
-                current_child->data.layout.bounds.width
-                + current_child->data.layout.margins.y
-                + current_child->data.layout.margins.w
+    childWidths += current->layout.padding.y + current->layout.padding.w;
+    while (currentChild)
+{
+        childWidths += (
+                currentChild->layout.bounds.width
+                + currentChild->layout.margins.y
+                + currentChild->layout.margins.w
         );
 
-        ++child_count;
+        ++childCount;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 
-    float child_spacing = current->data.layout.child_spacing * (float) (child_count - 1u);
+    float childSpacing = current->layout.childSpacing * (float) (childCount - 1);
 
-    float current_x = 0.0f;
-    switch (current->data.layout.size_flags.x) {
+    float currentX = 0.0f;
+    switch (current->layout.sizeFlags.x)
+{
         case SIZE_FLAGS_FIT:
-            current_x = current->data.layout.bounds.x + current->data.layout.padding.w;
+            currentX = current->layout.bounds.x + current->layout.padding.w;
             break;
         case SIZE_FLAGS_GROW:
         case SIZE_FLAGS_FIXED:
-            current_x = current->data.layout.bounds.x + current->data.layout.padding.w + ((current->data.layout.bounds.width - child_widths - child_spacing) / 2.0f);
+            currentX = current->layout.bounds.x + current->layout.padding.w + ((current->layout.bounds.width - childWidths - childSpacing) / 2.0f);
             break;
         default:
             break;
     }
 
-    current_child = current->first_child;
-    while (current_child) {
-        float left_padding_adjustment_x = current_child->data.layout.margins.w;
-        if (current_child->left_sibling) {
-            left_padding_adjustment_x += current->data.layout.child_spacing;
+    currentChild = current->firstChild;
+    while (currentChild)
+{
+        float leftPaddingAdjustmentX = currentChild->layout.margins.w;
+        if (currentChild->leftSibling)
+{
+            leftPaddingAdjustmentX += current->layout.childSpacing;
         }
 
-        current_child->data.layout.bounds.x = current_x + left_padding_adjustment_x;
-        current_x += current_child->data.layout.bounds.width + left_padding_adjustment_x;
+        currentChild->layout.bounds.x = currentX + leftPaddingAdjustmentX;
+        currentX += currentChild->layout.bounds.width + leftPaddingAdjustmentX;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_y_center_along_x(GuiNode* current) {
-    float current_y_parent_part = 0.0f;
+static void SetChildrenYCenterAlongX(Node* current)
+{
+    float currentYParentPart = 0.0f;
 
-    current_y_parent_part = current->data.layout.bounds.y + (current->data.layout.bounds.height / 2.0f);
+    currentYParentPart = current->layout.bounds.y + (current->layout.bounds.height / 2.0f);
 
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        float current_y = (
-                current_y_parent_part
-                - (current_child->data.layout.bounds.height / 2.0f)
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        float currentY = (
+                currentYParentPart
+                - (currentChild->layout.bounds.height / 2.0f)
         );
 
-        current_child->data.layout.bounds.y = current_y;
+        currentChild->layout.bounds.y = currentY;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_x_end_along_x(GuiNode* current) {
-    int child_count = 0;
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        ++child_count;
+static void SetChildrenXEndAlongX(Node* current)
+{
+    int childCount = 0;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        ++childCount;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 
-    float current_x = current->data.layout.bounds.x + current->data.layout.bounds.width - current->data.layout.padding.y;
+    float currentX = current->layout.bounds.x + current->layout.bounds.width - current->layout.padding.y;
 
-    current_child = current->last_child;
-    while (current_child) {
-        float right_padding_adjustment_x = current_child->data.layout.margins.y;
-        if (current_child->right_sibling) {
-            right_padding_adjustment_x += current_child->right_sibling->data.layout.margins.w + current->data.layout.child_spacing;
+    currentChild = current->lastChild;
+    while (currentChild)
+{
+        float rightPaddingAdjustmentX = currentChild->layout.margins.y;
+        if (currentChild->rightSibling)
+{
+            rightPaddingAdjustmentX += currentChild->rightSibling->layout.margins.w + current->layout.childSpacing;
         }
 
-        current_x -= current_child->data.layout.bounds.width + right_padding_adjustment_x;
-        current_child->data.layout.bounds.x = current_x;
+        currentX -= currentChild->layout.bounds.width + rightPaddingAdjustmentX;
+        currentChild->layout.bounds.x = currentX;
 
-        current_child = current_child->left_sibling;
+        currentChild = currentChild->leftSibling;
     }
 }
 
-static void _set_children_y_end_along_x(GuiNode* current) {
-    float current_y_parent_part = current->data.layout.bounds.y + current->data.layout.bounds.height - current->data.layout.padding.z;
+static void SetChildrenYEndAlongX(Node* current)
+{
+    float currentYParentPart = current->layout.bounds.y + current->layout.bounds.height - current->layout.padding.z;
 
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        float current_y = current_y_parent_part - current_child->data.layout.bounds.height - current_child->data.layout.margins.z;
-        current_child->data.layout.bounds.y = current_y;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        float currentY = currentYParentPart - currentChild->layout.bounds.height - currentChild->layout.margins.z;
+        currentChild->layout.bounds.y = currentY;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_positions_along_y(GuiNode* current) {
-    switch (current->data.layout.child_alignment.x) {
+static void SetChildrenPositionsAlongY(Node* current)
+{
+    switch (current->layout.childAlignment.x)
+{
         case CHILD_ALIGNMENT_BEGIN:
-            _set_children_x_begin_along_y(current);
+            SetChildrenXBeginAlongY(current);
             break;
         case CHILD_ALIGNMENT_CENTER:
-            _set_children_x_center_along_y(current);
+            SetChildrenXCenterAlongY(current);
             break;
         case CHILD_ALIGNMENT_END:
-            _set_children_x_end_along_y(current);
+            SetChildrenXEndAlongY(current);
             break;
         case CHILD_ALIGNMENT_RADIAL:
             break;
         default:
-            _set_children_x_begin_along_y(current);
+            SetChildrenXBeginAlongY(current);
             break;
     }
 
-    switch (current->data.layout.child_alignment.y) {
+    switch (current->layout.childAlignment.y)
+{
         case CHILD_ALIGNMENT_BEGIN:
-            _set_children_y_begin_along_y(current);
+            SetChildrenYBeginAlongY(current);
             break;
         case CHILD_ALIGNMENT_CENTER:
-            _set_children_y_center_along_y(current);
+            SetChildrenYCenterAlongY(current);
             break;
         case CHILD_ALIGNMENT_END:
-            _set_children_y_end_along_y(current);
+            SetChildrenYEndAlongY(current);
             break;
         case CHILD_ALIGNMENT_RADIAL:
             break;
         default:
-            _set_children_y_begin_along_y(current);
+            SetChildrenYBeginAlongY(current);
             break;
     }
 }
 
-static void _set_children_y_begin_along_y(GuiNode* current) {
-    int child_count = 0;
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        ++child_count;
+static void SetChildrenYBeginAlongY(Node* current)
+{
+    int childCount = 0;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        ++childCount;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 
-    float current_y = current->data.layout.bounds.y + current->data.layout.padding.x;
+    float currentY = current->layout.bounds.y + current->layout.padding.x;
 
-    current_child = current->first_child;
-    while (current_child) {
-        float top_magin_adjustment = current_child->data.layout.margins.x;
-        if (current_child->left_sibling) {
-            top_magin_adjustment += current_child->left_sibling->data.layout.margins.y + current->data.layout.child_spacing;
+    currentChild = current->firstChild;
+    while (currentChild)
+{
+        float topMarginAdjustment = currentChild->layout.margins.x;
+        if (currentChild->leftSibling)
+{
+            topMarginAdjustment += currentChild->leftSibling->layout.margins.y + current->layout.childSpacing;
         }
 
-        current_child->data.layout.bounds.y = current_y + top_magin_adjustment;
-        current_y += current_child->data.layout.bounds.height + top_magin_adjustment;
+        currentChild->layout.bounds.y = currentY + topMarginAdjustment;
+        currentY += currentChild->layout.bounds.height + topMarginAdjustment;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_x_begin_along_y(GuiNode* current) {
-    float current_x = current->data.layout.bounds.x + current->data.layout.padding.w;
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        float left_margin_adjustment = current_child->data.layout.margins.w;
-        current_child->data.layout.bounds.x = current_x + left_margin_adjustment;
+static void SetChildrenXBeginAlongY(Node* current)
+{
+    float currentX = current->layout.bounds.x + current->layout.padding.w;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+{
+        float leftMarginAdjustment = currentChild->layout.margins.w;
+        currentChild->layout.bounds.x = currentX + leftMarginAdjustment;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_y_center_along_y(GuiNode* current) {
-    float child_heights = 0.0f;
-    int child_count = 0;
-    GuiNode *current_child = current->first_child;
+static void SetChildrenYCenterAlongY(Node* current)
+{
+    float childHeights = 0.0f;
+    int childCount = 0;
+    Node *currentChild = current->firstChild;
 
-    child_heights += current->data.layout.padding.x + current->data.layout.padding.z;
-    while (current_child) {
-        child_heights += (
-                current_child->data.layout.bounds.height
-                + current_child->data.layout.margins.x
-                + current_child->data.layout.margins.z
+    childHeights += current->layout.padding.x + current->layout.padding.z;
+    while (currentChild)
+{
+        childHeights += (
+                currentChild->layout.bounds.height
+                + currentChild->layout.margins.x
+                + currentChild->layout.margins.z
         );
 
-        ++child_count;
+        ++childCount;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 
-    float child_spacing = current->data.layout.child_spacing * (float) (child_count - 1u);
+    float childSpacing = current->layout.childSpacing * (float) (childCount - 1);
 
-    float current_y = 0.0f;
-    switch (current->data.layout.size_flags.y) {
+    float currentY = 0.0f;
+    switch (current->layout.sizeFlags.y)
+{
         case SIZE_FLAGS_FIT:
-            current_y = current->data.layout.bounds.y + current->data.layout.padding.x;
+            currentY = current->layout.bounds.y + current->layout.padding.x;
             break;
         case SIZE_FLAGS_GROW:
         case SIZE_FLAGS_FIXED:
-            current_y = current->data.layout.bounds.y + current->data.layout.padding.x + ((current->data.layout.bounds.height - child_heights - child_spacing) / 2.0f);
+            currentY = current->layout.bounds.y + current->layout.padding.x + ((current->layout.bounds.height - childHeights - childSpacing) / 2.0f);
             break;
         default:
             break;
     }
 
-    current_child = current->first_child;
-    while (current_child) {
-        float top_margin_adjustment = current_child->data.layout.margins.x;
-        if (current_child->left_sibling) {
-            top_margin_adjustment += current->data.layout.child_spacing;
+    currentChild = current->firstChild;
+    while (currentChild)
+{
+        float topMarginAdjustment = currentChild->layout.margins.x;
+        if (currentChild->leftSibling)
+{
+            topMarginAdjustment += current->layout.childSpacing;
         }
 
-        current_child->data.layout.bounds.y = current_y + top_margin_adjustment;
-        current_y += top_margin_adjustment + current_child->data.layout.bounds.height;
+        currentChild->layout.bounds.y = currentY + topMarginAdjustment;
+        currentY += topMarginAdjustment + currentChild->layout.bounds.height;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_x_center_along_y(GuiNode* current) {
-    float current_x_parent_part = 0.0f;
+static void SetChildrenXCenterAlongY(Node* current)
+{
+    float currentXParentPart = 0.0f;
 
-    current_x_parent_part = current->data.layout.bounds.x + (current->data.layout.bounds.width / 2.0f);
+    currentXParentPart = current->layout.bounds.x + (current->layout.bounds.width / 2.0f);
 
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        float current_x = (
-                current_x_parent_part
-                - (current_child->data.layout.bounds.width / 2.0f)
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+    {
+        float currentX = (
+                currentXParentPart
+                - (currentChild->layout.bounds.width / 2.0f)
         );
 
-        current_child->data.layout.bounds.x = current_x;
+        currentChild->layout.bounds.x = currentX;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 }
 
-static void _set_children_y_end_along_y(GuiNode* current) {
-    int child_count = 0;
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        ++child_count;
+static void SetChildrenYEndAlongY(Node* current)
+{
+    int childCount = 0;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+    {
+        ++childCount;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
 
-    float current_y = current->data.layout.bounds.y + current->data.layout.bounds.height - current->data.layout.padding.z;
+    float currentY = current->layout.bounds.y + current->layout.bounds.height - current->layout.padding.z;
 
-    current_child = current->last_child;
-    while (current_child) {
-        float bottom_margin_adjustment = current_child->data.layout.margins.z;
-        if (current_child->right_sibling) {
-            bottom_margin_adjustment += current_child->right_sibling->data.layout.margins.x + current->data.layout.child_spacing;
+    currentChild = current->lastChild;
+    while (currentChild)
+    {
+        float bottomMarginAdjustment = currentChild->layout.margins.z;
+        if (currentChild->rightSibling)
+        {
+            bottomMarginAdjustment += currentChild->rightSibling->layout.margins.x + current->layout.childSpacing;
         }
 
-        current_y -= current_child->data.layout.bounds.width + bottom_margin_adjustment;
-        current_child->data.layout.bounds.y = current_y;
+        currentY -= currentChild->layout.bounds.width + bottomMarginAdjustment;
+        currentChild->layout.bounds.y = currentY;
 
-        current_child = current_child->left_sibling;
+        currentChild = currentChild->leftSibling;
     }
 }
 
-static void _set_children_x_end_along_y(GuiNode* current) {
-    float current_x_parent_part = current->data.layout.bounds.x + current->data.layout.bounds.width - current->data.layout.padding.y;
+static void SetChildrenXEndAlongY(Node* current)
+{
+    float currentXParentPart = current->layout.bounds.x + current->layout.bounds.width - current->layout.padding.y;
 
-    GuiNode *current_child = current->first_child;
-    while (current_child) {
-        float current_x = current_x_parent_part - current_child->data.layout.bounds.width - current_child->data.layout.margins.y;
-        current_child->data.layout.bounds.x = current_x;
+    Node *currentChild = current->firstChild;
+    while (currentChild)
+    {
+        float currentX = currentXParentPart - currentChild->layout.bounds.width - currentChild->layout.margins.y;
+        currentChild->layout.bounds.x = currentX;
 
-        current_child = current_child->right_sibling;
+        currentChild = currentChild->rightSibling;
     }
+}
+
+void Draw()
+{
+    DrawInternal(GET(0));
+}
+
+static void DrawInternal(Node* current)
+{
+    current->drawFunc.draw(current->layout.bounds);
+
+    Node* currentChild = current->firstChild;
+    while (currentChild)
+    {
+        DrawInternal(currentChild);
+        currentChild = currentChild->rightSibling;
+    }
+}
+
+
+static int AreEqualApproxF(float a, float b)
+{
+    return fabsf(a - b) < FLT_EPSILON;
 }
 
 
 #undef GET
 
-#if UNDEF_SIZE
-#undef RLAUTO_LAYOUT_TREE_SIZE
+#if UNDEF_CAPACITY
+#undef RLAUTO_LAYOUT_TREE_CAPACITY
 #endif
 
 #if UNDEF_INDEX_MODE

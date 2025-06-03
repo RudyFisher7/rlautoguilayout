@@ -22,3 +22,31 @@
 
 cmake_minimum_required(VERSION 3.26)
 project(rlautolayoutexample)
+
+
+set(LIBS
+        rlautolayout
+        raylib
+)
+
+
+set(CENTERED_MENU_BUTTONS_EXAMPLE rlautolayoutcenteredmenubuttonsexample)
+
+add_executable(${CENTERED_MENU_BUTTONS_EXAMPLE}
+        centered_menu_buttons_example.c
+)
+
+target_link_libraries(${CENTERED_MENU_BUTTONS_EXAMPLE} PUBLIC
+        ${LIBS}
+)
+
+
+set(APPLICATION_GUI_EXAMPLE rlautolayoutapplicationguiexample)
+
+add_executable(${APPLICATION_GUI_EXAMPLE}
+        application_gui_example.c
+)
+
+target_link_libraries(${APPLICATION_GUI_EXAMPLE} PUBLIC
+        ${LIBS}
+)

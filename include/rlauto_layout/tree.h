@@ -36,6 +36,8 @@ extern void BeginRoot();
 extern void EndRoot();
 
 extern void Begin();
+extern void BeginHBox();
+extern void BeginVBox();
 extern void End();
 
 extern void SetBounds(Rectangle value);
@@ -74,6 +76,12 @@ extern void Draw();
     for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, EndRoot())
 
 #define GUI Begin();\
+    for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, End())
+
+#define GUI_HBOX BeginHBox();\
+    for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, End())
+
+#define GUI_VBOX BeginVBox();\
     for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, End())
 
 

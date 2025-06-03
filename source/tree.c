@@ -109,11 +109,18 @@ static void SetChildrenYEndAlongY(Node*);
 static int AreEqualApproxF(float a, float b);
 
 
+static void PassThroughDraw(Rectangle bounds, void* args)
+{
+    (void)bounds;
+    (void)args;
+}
+
+
 void BeginRoot()
 {
     *GET(0) = (Node){
-            (Layout){},
-            (DrawFunc){},
+            (Layout){0},
+            (DrawFunc){&PassThroughDraw, NULL},
             NULL,
             NULL,
             NULL,
@@ -132,8 +139,68 @@ void EndRoot()
 void Begin()
 {
     *GET(0) = (Node){
-            (Layout){},
-            (DrawFunc){},
+            (Layout){0},
+            (DrawFunc){&PassThroughDraw, NULL},
+            currentNode,
+            NULL,
+            NULL,
+            NULL,
+            NULL
+    };
+
+    BeginInternal();
+}
+
+void BeginHBox()
+{
+    *GET(0) = (Node){
+            (Layout){
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f},
+                    {FLT_MAX, FLT_MAX},
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
+                    {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
+                    CHILD_LAYOUT_AXIS_X,
+                    NULL,
+                    0,
+            },
+            (DrawFunc){&PassThroughDraw, NULL},
+            currentNode,
+            NULL,
+            NULL,
+            NULL,
+            NULL
+    };
+
+    BeginInternal();
+}
+
+void BeginVBox()
+{
+    *GET(0) = (Node){
+            (Layout){
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f},
+                    {FLT_MAX, FLT_MAX},
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
+                    {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
+                    CHILD_LAYOUT_AXIS_Y,
+                    NULL,
+                    0,
+            },
+            (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
             NULL,
             NULL,

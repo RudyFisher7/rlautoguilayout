@@ -4,7 +4,7 @@
   "configurePresets": [
     {
       "name": "release_preset",
-      "description": "Release build with C89",
+      "description": "Release build with C99.",
       "binaryDir": "${sourceDir}/_out/cmake-preset-build-release",
       "cacheVariables": {
         "CMAKE_C_STANDARD": "99",
@@ -15,13 +15,25 @@
     },
     {
       "name": "debug_preset",
-      "description": "Debug build with C89",
+      "description": "Debug build with C99.",
       "binaryDir": "${sourceDir}/_out/cmake-preset-build-debug",
       "cacheVariables": {
         "CMAKE_C_STANDARD": "99",
         "CMAKE_BUILD_TYPE": "Debug",
         "ENABLE_TESTS": "ON",
         "ENABLE_EXAMPLES": "ON"
+      }
+    },
+    {
+      "name": "debug_preprocess_preset",
+      "description": "Run the compiler's preprocess step to expand macros. FIXME",
+      "binaryDir": "${sourceDir}/_out/cmake-preset-build-debug-preprocess",
+      "cacheVariables": {
+        "CMAKE_C_STANDARD": "99",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_EXAMPLES": "ON",
+        "CMAKE_C_FLAGS": "-E"
       }
     }
   ],
@@ -35,6 +47,12 @@
     {
       "name": "debug_preset_build",
       "configurePreset": "debug_preset",
+      "configuration": "Debug",
+      "jobs": 12
+    },
+    {
+      "name": "debug_preprocess_preset_build",
+      "configurePreset": "debug_preprocess_preset",
       "configuration": "Debug",
       "jobs": 12
     }

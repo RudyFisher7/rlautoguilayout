@@ -70,6 +70,8 @@ void UpdateLayout(void);
 
 void Draw(void);
 
+void PassThroughDraw(Rectangle *bounds, void *args);
+
 
 #define GUI_ROOT static int rlautoMacroIndex = 0;\
     BeginRoot();\

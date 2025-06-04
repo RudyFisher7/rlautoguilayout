@@ -53,6 +53,22 @@ static int treeSize = 0;
 static Node tree[RLAUTO_LAYOUT_TREE_CAPACITY];
 static Node* bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
 static Node* currentNode = NULL;
+static const Layout DefaultNodeLayout = {
+        {0.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f},
+        {FLT_MAX, FLT_MAX},
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
+        {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
+        CHILD_LAYOUT_AXIS_X,
+        NULL,
+        0u,
+};
 
 
 #ifndef ENABLE_DEBUG
@@ -107,12 +123,14 @@ static void EndInternal(void);
 static void DrawInternal(Node*);
 static void UpdateFitWidths(void);
 static void UpdateFitWidthContainer(Node*);
+static void UpdateFitWidthChild(Node*);
 static void UpdateGrowWidths(void);
 static void UpdateGrowWidthContainer(Node*);
 static void UpdateTextWrapping(void);
 static void UpdateTextWrappingHelper(Node*);
 static void UpdateFitHeights(void);
 static void UpdateFitHeightContainer(Node*);
+static void UpdateFitHeightChild(Node*);
 static void UpdateGrowHeights(void);
 static void UpdateGrowHeightContainer(Node*);
 static void UpdatePositionsAndAlignment(void);
@@ -134,7 +152,7 @@ static void SetChildrenYEndAlongY(Node*);
 static int AreEqualApproxF(float a, float b);
 
 
-static void PassThroughDraw(Rectangle *bounds, void *args)
+void PassThroughDraw(Rectangle *bounds, void *args)
 {
     (void)bounds;
     (void)args;
@@ -144,7 +162,7 @@ static void PassThroughDraw(Rectangle *bounds, void *args)
 void BeginRoot(void)
 {
     SET(0, ((Node){
-            (Layout){0},
+            DefaultNodeLayout,
             (DrawFunc){&PassThroughDraw, NULL},
             NULL,
             NULL,
@@ -164,7 +182,7 @@ void EndRoot(void)
 void Begin(void)
 {
     SET(currentIndex, ((Node){
-            (Layout){0},
+            DefaultNodeLayout,
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
             NULL,
@@ -484,7 +502,10 @@ static void UpdateFitWidths()
         }
         else
         {
-            // leaf
+            if (current->layout.sizeFlags.x != SIZE_FLAGS_FIXED)
+            {
+                UpdateFitWidthChild(current);
+            }
         }
     }
 
@@ -538,6 +559,11 @@ static void UpdateFitWidthContainer(Node* node)
     // set the parent's width to the calculated width
 //        node->layout.bounds.width = width;
     node->layout.bounds.width = fmaxf(width, node->layout.minSize.x);
+}
+
+static void UpdateFitWidthChild(Node* node)
+{
+    node->layout.bounds.width = node->layout.minSize.x;
 }
 
 static void UpdateGrowWidths()
@@ -641,7 +667,9 @@ static void UpdateGrowWidthContainer(Node* node)
                 currentChild = currentChild->rightSibling;
             }
         }
-    } else {
+    }
+    else
+    {
         Node *currentChild = node->firstChild;
         while (currentChild)
         {
@@ -732,7 +760,10 @@ static void UpdateFitHeights()
         }
         else
         {
-            // leaf
+            if (current->layout.sizeFlags.y != SIZE_FLAGS_FIXED)
+            {
+                UpdateFitHeightChild(current);
+            }
         }
     }
 
@@ -788,6 +819,11 @@ static void UpdateFitHeightContainer(Node* node)
     node->layout.bounds.height = fmaxf(height, node->layout.minSize.y);
 }
 
+static void UpdateFitHeightChild(Node* node)
+{
+    node->layout.bounds.height = node->layout.minSize.y;
+}
+
 static void UpdateGrowHeights()
 {
     for (int i = 0; i < treeSize; ++i)
@@ -803,6 +839,12 @@ static void UpdateGrowHeights()
 
 static void UpdateGrowHeightContainer(Node* node)
 {
+//    if (node->parent)
+//    {
+//        // propogate max sizes down the tree
+//        node->layout.maxSize.y = fminf(node->layout.maxSize.y, node->parent->layout.maxSize.y);
+//    }
+
     float parentRemainingHeight = (
             node->layout.bounds.height
             - node->layout.padding.x
@@ -925,9 +967,9 @@ static void UpdatePositionsAndAlignment()
 static void UpdatePositionsAndAlignmentHelper(Node* node)
 {
     if (node->firstChild)
-{
+    {
         switch (node->layout.childLayoutAxis)
-{
+        {
             case CHILD_LAYOUT_AXIS_X:
                 SetChildrenPositionsAlongX(node);
                 break;
@@ -951,7 +993,7 @@ static void UpdatePositionsAndAlignmentHelper(Node* node)
 static void SetChildrenPositionsAlongX(Node* current)
 {
     switch (current->layout.childAlignment.x)
-{
+    {
         case CHILD_ALIGNMENT_BEGIN:
             SetChildrenXBeginAlongX(current);
             break;
@@ -969,7 +1011,7 @@ static void SetChildrenPositionsAlongX(Node* current)
     }
 
     switch (current->layout.childAlignment.y)
-{
+    {
         case CHILD_ALIGNMENT_BEGIN:
             SetChildrenYBeginAlongX(current);
             break;
@@ -992,7 +1034,7 @@ static void SetChildrenXBeginAlongX(Node* current)
     int childCount = 0;
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         ++childCount;
 
         currentChild = currentChild->rightSibling;
@@ -1021,7 +1063,7 @@ static void SetChildrenYBeginAlongX(Node* current)
     float currentY = current->layout.bounds.y + current->layout.padding.x;
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float topPaddingAdjustment = currentChild->layout.margins.x;
         currentChild->layout.bounds.y = currentY + topPaddingAdjustment;
 
@@ -1037,7 +1079,7 @@ static void SetChildrenXCenterAlongX(Node* current)
 
     childWidths += current->layout.padding.y + current->layout.padding.w;
     while (currentChild)
-{
+    {
         childWidths += (
                 currentChild->layout.bounds.width
                 + currentChild->layout.margins.y
@@ -1053,7 +1095,7 @@ static void SetChildrenXCenterAlongX(Node* current)
 
     float currentX = 0.0f;
     switch (current->layout.sizeFlags.x)
-{
+    {
         case SIZE_FLAGS_FIT:
             currentX = current->layout.bounds.x + current->layout.padding.w;
             break;
@@ -1067,10 +1109,10 @@ static void SetChildrenXCenterAlongX(Node* current)
 
     currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float leftPaddingAdjustmentX = currentChild->layout.margins.w;
         if (currentChild->leftSibling)
-{
+        {
             leftPaddingAdjustmentX += current->layout.childSpacing;
         }
 
@@ -1089,7 +1131,7 @@ static void SetChildrenYCenterAlongX(Node* current)
 
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float currentY = (
                 currentYParentPart
                 - (currentChild->layout.bounds.height / 2.0f)
@@ -1106,7 +1148,7 @@ static void SetChildrenXEndAlongX(Node* current)
     int childCount = 0;
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         ++childCount;
 
         currentChild = currentChild->rightSibling;
@@ -1116,10 +1158,10 @@ static void SetChildrenXEndAlongX(Node* current)
 
     currentChild = current->lastChild;
     while (currentChild)
-{
+    {
         float rightPaddingAdjustmentX = currentChild->layout.margins.y;
         if (currentChild->rightSibling)
-{
+        {
             rightPaddingAdjustmentX += currentChild->rightSibling->layout.margins.w + current->layout.childSpacing;
         }
 
@@ -1136,7 +1178,7 @@ static void SetChildrenYEndAlongX(Node* current)
 
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float currentY = currentYParentPart - currentChild->layout.bounds.height - currentChild->layout.margins.z;
         currentChild->layout.bounds.y = currentY;
 
@@ -1147,7 +1189,7 @@ static void SetChildrenYEndAlongX(Node* current)
 static void SetChildrenPositionsAlongY(Node* current)
 {
     switch (current->layout.childAlignment.x)
-{
+    {
         case CHILD_ALIGNMENT_BEGIN:
             SetChildrenXBeginAlongY(current);
             break;
@@ -1165,7 +1207,7 @@ static void SetChildrenPositionsAlongY(Node* current)
     }
 
     switch (current->layout.childAlignment.y)
-{
+    {
         case CHILD_ALIGNMENT_BEGIN:
             SetChildrenYBeginAlongY(current);
             break;
@@ -1319,7 +1361,7 @@ static void SetChildrenYEndAlongY(Node* current)
             bottomMarginAdjustment += currentChild->rightSibling->layout.margins.x + current->layout.childSpacing;
         }
 
-        currentY -= currentChild->layout.bounds.width + bottomMarginAdjustment;
+        currentY -= currentChild->layout.bounds.height + bottomMarginAdjustment;
         currentChild->layout.bounds.y = currentY;
 
         currentChild = currentChild->leftSibling;

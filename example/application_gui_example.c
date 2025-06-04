@@ -43,32 +43,44 @@ int main() {
     GUI_ROOT {
         GUI_VBOX {
             SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+            SetMarginsAll(8.0f);
+
+            // heading navigation
             GUI_HBOX {
-                SetSizeFlagX(SIZE_FLAGS_GROW);
+                SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_FIT});
                 SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
-                SetChildSpacing(16.0f);
+                SetChildSpacing(4.0f);
                 SetPaddingAll(4.0f);
+                SetMarginsAll(8.0f);
                 SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args0});
 
                 const int navigationLinks0 = 4;
                 int navLinks0[4];
                 for (int i = 0; i < navigationLinks0; ++i) {
                     GUI {
-                        SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
-                        SetSize((Vector2){120.0f, 16.0f});
-                        SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
+                        SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_FIT});
+                        SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
+                        SetDraw((DrawFunc){&rlautoDrawRectangleLines, (void*)&args1});
+                        GUI {
+                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_FIXED, SIZE_FLAGS_FIXED});
+                            SetSize((Vector2){120.0f, 16.0f});
+                            SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
+                        }
                     }
                 }
             }
 
+            // body
             GUI_HBOX {
                 SetSizeFlagsBoth(SIZE_FLAGS_GROW);
-                SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
+
+                // side panel navigation
                 GUI_VBOX {
                     SetSizeFlags((Vector2UInt8){SIZE_FLAGS_FIT, SIZE_FLAGS_GROW});
-                    SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
+                    SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_BEGIN});
                     SetChildSpacing(16.0f);
-                    SetPaddingAll(4.0f);
+                    SetPaddingAll(16.0f);
+                    SetMarginsAll(8.0f);
                     SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
 
                     const int navigationLinks1 = 4;
@@ -82,20 +94,20 @@ int main() {
                     }
                 }
 
+                // content area
                 GUI_VBOX {
                     SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
-                    SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_CENTER, CHILD_ALIGNMENT_END});
-                    SetChildSpacing(16.0f);
-                    SetPaddingAll(4.0f);
-                    SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
+                    SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_END});
+                    SetChildSpacing(24.0f);
 
                     const int navigationLinks2 = 4;
                     int navLinks2[4];
                     for (int i = 0; i < navigationLinks2; ++i) {
                         GUI {
-                            SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
-                            SetSize((Vector2){120.0f, 16.0f});
-                            SetDraw((DrawFunc){&rlautoDrawRectangleLines, (void*)&args1});
+                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+                            SetSize((Vector2){32.0f, 32.0f});
+                            SetMarginsAll(8.0f);
+                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
                         }
                     }
                 }

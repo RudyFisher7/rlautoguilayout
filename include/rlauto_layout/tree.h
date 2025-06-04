@@ -70,6 +70,12 @@ void UpdateLayout(void);
 
 void Draw(void);
 
+/**
+ * A draw function that just passes through (draws nothing and computes nothing).
+ * Parameters can be NULL.
+ * @param bounds Unused. Can be NULL.
+ * @param args Unused. Can be NULL.
+ */
 void PassThroughDraw(Rectangle *bounds, void *args);
 
 

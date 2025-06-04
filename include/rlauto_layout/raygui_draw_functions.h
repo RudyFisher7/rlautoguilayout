@@ -23,35 +23,32 @@
  */
 
 
-#include "rlauto_layout/draw_functions.h"
+#ifndef RLAUTO_LAYOUT_RAYGUI_DRAW_FUNCTIONS_H
+#define RLAUTO_LAYOUT_RAYGUI_DRAW_FUNCTIONS_H
 
 
-void rlautoDrawLine(Rectangle *bounds, void *args)
+#include "rlauto_layout/raylib_draw_functions.h"
+
+#include <raylib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+typedef struct gui_text_args_t
 {
-    Args *argData = (Args*)args;
-    DrawLine(
-            (int)bounds->x,
-            (int)bounds->y,
-            (int)bounds->x + (int)bounds->width,
-            (int)bounds->y,
-            argData->color
-    );
-}
+    int returnedValue;
+    const char* text;
+} GuiTextArgs;
 
-void rlautoDrawRectangle(Rectangle *bounds, void *args)
-{
-    Args *argData = (Args*)args;
-    DrawRectangleRec(*bounds, argData->color);
-}
 
-void rlautoDrawRectangleLines(Rectangle *bounds, void *args)
-{
-    Args *argData = (Args*)args;
-    DrawRectangleLines((int)bounds->x, (int)bounds->y, (int)bounds->width, (int)bounds->height, argData->color);
-}
+void rlautoGuiButton(Rectangle *bounds, void* args);
 
-void rlautoDrawText(Rectangle *bounds, void *args)
-{
-    TextArgs *argData = (TextArgs*)args;
-    DrawText(argData->text, bounds->x, bounds->y, argData->fontSize, argData->color);
-}
+
+#ifdef __cplusplus
+};
+#endif
+
+
+#endif //RLAUTO_LAYOUT_RAYGUI_DRAW_FUNCTIONS_H

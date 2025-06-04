@@ -23,39 +23,41 @@
  */
 
 
-#ifndef RLAUTO_LAYOUT_DRAW_FUNCTIONS_H
-#define RLAUTO_LAYOUT_DRAW_FUNCTIONS_H
+#include "rlauto_layout/raylib_draw_functions.h"
 
 
-#include <raylib.h>
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-typedef struct args_t
+void rlautoDrawLine(Rectangle *bounds, void *args)
 {
-    Color color;
-} Args;
+    Args *argData = (Args*)args;
+    DrawLine(
+            (int)bounds->x,
+            (int)bounds->y,
+            (int)bounds->x + (int)bounds->width,
+            (int)bounds->y,
+            argData->color
+    );
+}
 
-typedef struct text_args_t
+void rlautoDrawRectangle(Rectangle *bounds, void *args)
 {
-    int fontSize;
-    Color color;
-    const char* text;
-} TextArgs;
+    Args *argData = (Args*)args;
+    DrawRectangleRec(*bounds, argData->color);
+}
 
+void rlautoDrawRectangleLines(Rectangle *bounds, void *args)
+{
+    Args *argData = (Args*)args;
+    DrawRectangleLines((int)bounds->x, (int)bounds->y, (int)bounds->width, (int)bounds->height, argData->color);
+}
 
-void rlautoDrawLine(Rectangle *bounds, void* args);
-void rlautoDrawRectangle(Rectangle *bounds, void* args);
-void rlautoDrawRectangleLines(Rectangle *bounds, void* args);
-void rlautoDrawText(Rectangle *bounds, void* args);
+void rlautoDrawText(Rectangle *bounds, void *args)
+{
+    TextArgs *argData = (TextArgs*)args;
+    DrawText(argData->text, bounds->x, bounds->y, argData->fontSize, argData->color);
+}
 
-
-#ifdef __cplusplus
-};
-#endif
-
-#endif //RLAUTO_LAYOUT_DRAW_FUNCTIONS_H
+void rlautoDrawWrappedText(Rectangle *bounds, void *args)
+{
+    TextArgs *argData = (TextArgs*)args;
+    DrawText(argData->text, bounds->x, bounds->y, argData->fontSize, argData->color);
+}

@@ -44,7 +44,7 @@ endif()
 Include(FetchContent)
 
 if(NOT raylib_POPULATED)
-    message(STATUS "${PROJECT_NAME}: fetch raylib.")
+    message(STATUS "${PROJECT_NAME}: fetching raylib...")
     FetchContent_Declare(
             raylib
             GIT_REPOSITORY https://github.com/raysan5/raylib.git
@@ -55,21 +55,48 @@ if(NOT raylib_POPULATED)
 
     FetchContent_MakeAvailable(raylib)
     FetchContent_GetProperties(raylib)
-    message(STATUS "${CMAKE_MODULE_PATH}")
 else()
     message(STATUS "${PROJECT_NAME}: raylib already available.")
 endif()
 
 
+if(NOT raygui_POPULATED)
+    message(STATUS "${PROJECT_NAME}: fetching raygui...")
+    FetchContent_Declare(
+            raygui
+            GIT_REPOSITORY https://github.com/raysan5/raygui.git
+            GIT_TAG 4.0
+            GIT_PROGRESS TRUE
+            GIT_SHALLOW TRUE
+    )
+
+    FetchContent_MakeAvailable(raygui)
+    FetchContent_GetProperties(raygui)
+
+    # the above commands don't seem to work with raygui for some reason.
+    # add the CMake project directory directly for now.
+    add_subdirectory("${CMAKE_BINARY_DIR}/_deps/raygui-src/projects/CMake")
+else()
+    message(STATUS "${PROJECT_NAME}: raygui already available.")
+endif()
+
+
+set(LIBS
+        raylib
+        raygui
+)
+
 set(SOURCES
         source/tree.c
-        source/draw_functions.c
+        source/raylib_draw_functions.c
+        source/raygui_draw_functions.c
 )
 
 set(HEADERS
         include/rlauto_layout/tree.h
         include/rlauto_layout/type_defs.h
-        include/rlauto_layout/draw_functions.h
+        include/rlauto_layout/raylib_draw_functions.h
+        include/rlauto_layout/raygui_draw_functions.h
 )
 
 add_library(${PROJECT_NAME} STATIC
@@ -82,5 +109,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-        raylib
+        ${LIBS}
 )

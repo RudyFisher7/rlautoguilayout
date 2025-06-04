@@ -790,7 +790,7 @@ static void UpdateFitHeightContainer(Node* node)
             height += layout->bounds.height + layout->margins.x + layout->margins.z;
 
             // propogate min heights up the tree
-            node->layout.minSize.y += layout->minSize.x + layout->margins.x + layout->margins.y;
+            node->layout.minSize.y += layout->minSize.y + layout->margins.x + layout->margins.z;
             ++childCount;
 
             current = current->rightSibling;

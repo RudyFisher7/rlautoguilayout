@@ -25,7 +25,8 @@
 
 
 #include "rlauto_layout/tree.h"
-#include "rlauto_layout/draw_functions.h"
+#include "rlauto_layout/raylib_draw_functions.h"
+#include "rlauto_layout/raygui_draw_functions.h"
 #include <raylib.h>
 
 
@@ -38,7 +39,8 @@ int main() {
     Args args0 = {GREEN};
     Args args1 = {BLUE};
     Args args2 = {ORANGE};
-    TextArgs args3 = {20, RAYWHITE, "Hello world!"};
+    TextArgs args3 = {20, RAYWHITE, "Hello raylib!"};
+    GuiTextArgs args4 = {0, "Hello raygui!"};
 
     GUI_ROOT {
         GUI_VBOX {
@@ -64,7 +66,7 @@ int main() {
                         GUI {
                             SetSizeFlags((Vector2UInt8){SIZE_FLAGS_FIXED, SIZE_FLAGS_FIXED});
                             SetSize((Vector2){120.0f, 16.0f});
-                            SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
+                            SetDraw((DrawFunc){&rlautoGuiButton, (void*)&args4});
                         }
                     }
                 }
@@ -87,9 +89,10 @@ int main() {
                     int navLinks1[4];
                     for (int i = 0; i < navigationLinks1; ++i) {
                         GUI {
-                            SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
-                            SetSize((Vector2){120.0f, 16.0f});
-                            SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
+                            SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+                            SetMinSize((Vector2){200.0f, 24.0f});
+                            SetDraw((DrawFunc){&rlautoGuiButton, (void*)&args4});
+//                            SetDraw((DrawFunc){&rlautoDrawText, (void*)&args3});
                         }
                     }
                 }

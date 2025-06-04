@@ -26,7 +26,6 @@ project(rlautolayoutexample)
 
 set(LIBS
         rlautolayout
-        raylib
 )
 
 

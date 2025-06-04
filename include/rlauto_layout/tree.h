@@ -32,43 +32,43 @@ extern "C" {
 #endif
 
 
-extern void BeginRoot(void);
-extern void EndRoot(void);
+void BeginRoot(void);
+void EndRoot(void);
 
-extern void Begin(void);
-extern void BeginHBox(void);
-extern void BeginVBox(void);
-extern void End(void);
+void Begin(void);
+void BeginHBox(void);
+void BeginVBox(void);
+void End(void);
 
-extern void SetBounds(Rectangle value);
-extern void SetPosition(Vector2 value);
-extern void SetSize(Vector2 value);
-extern void SetMargins(Vector4 value);
-extern void SetMarginsAll(float value);
-extern void SetMarginsX(Vector2 value);
-extern void SetMarginsY(Vector2 value);
-extern void SetPadding(Vector4 value);
-extern void SetPaddingAll(float value);
-extern void SetPaddingX(Vector2 value);
-extern void SetPaddingY(Vector2 value);
-extern void SetMinSize(Vector2 value);
-extern void SetMinSizeX(float value);
-extern void SetMinSizeY(float value);
-extern void SetMaxSize(Vector2 value);
-extern void SetMaxSizeX(float value);
-extern void SetMaxSizeY(float value);
-extern void SetChildSpacing(float value);
-extern void SetSizeFlags(Vector2UInt8 value);
-extern void SetSizeFlagsBoth(uint8_t value);
-extern void SetSizeFlagX(uint8_t value);
-extern void SetSizeFlagY(uint8_t value);
-extern void SetChildAlignment(Vector2UInt8 value);
-extern void SetChildLayoutAxis(ChildLayoutAxis value);
-extern void SetText(const char* value, int textLength, float fontSize, float lineSpacing);
-extern void SetDraw(DrawFunc value);
-extern void UpdateLayout(void);
+void SetBounds(Rectangle value);
+void SetPosition(Vector2 value);
+void SetSize(Vector2 value);
+void SetMargins(Vector4 value);
+void SetMarginsAll(float value);
+void SetMarginsX(Vector2 value);
+void SetMarginsY(Vector2 value);
+void SetPadding(Vector4 value);
+void SetPaddingAll(float value);
+void SetPaddingX(Vector2 value);
+void SetPaddingY(Vector2 value);
+void SetMinSize(Vector2 value);
+void SetMinSizeX(float value);
+void SetMinSizeY(float value);
+void SetMaxSize(Vector2 value);
+void SetMaxSizeX(float value);
+void SetMaxSizeY(float value);
+void SetChildSpacing(float value);
+void SetSizeFlags(Vector2UInt8 value);
+void SetSizeFlagsBoth(uint8_t value);
+void SetSizeFlagX(uint8_t value);
+void SetSizeFlagY(uint8_t value);
+void SetChildAlignment(Vector2UInt8 value);
+void SetChildLayoutAxis(ChildLayoutAxis value);
+void SetText(const char* value, int textLength, float fontSize, float lineSpacing);
+void SetDraw(DrawFunc value);
+void UpdateLayout(void);
 
-extern void Draw(void);
+void Draw(void);
 
 
 #define GUI_ROOT static int rlautoMacroIndex = 0;\

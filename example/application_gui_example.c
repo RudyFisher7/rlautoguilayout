@@ -51,7 +51,7 @@ int main() {
                 SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args0});
 
                 const int navigationLinks0 = 4;
-                int navLinks0[navigationLinks0] = {};
+                int navLinks0[4];
                 for (int i = 0; i < navigationLinks0; ++i) {
                     GUI {
                         SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
@@ -72,7 +72,7 @@ int main() {
                     SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args1});
 
                     const int navigationLinks1 = 4;
-                    int navLinks1[navigationLinks1] = {};
+                    int navLinks1[4];
                     for (int i = 0; i < navigationLinks1; ++i) {
                         GUI {
                             SetSizeFlagsBoth(SIZE_FLAGS_FIXED);
@@ -90,7 +90,7 @@ int main() {
                     SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
 
                     const int navigationLinks2 = 4;
-                    int navLinks2[navigationLinks2] = {};
+                    int navLinks2[4];
                     for (int i = 0; i < navigationLinks2; ++i) {
                         GUI {
                             SetSizeFlagsBoth(SIZE_FLAGS_FIXED);

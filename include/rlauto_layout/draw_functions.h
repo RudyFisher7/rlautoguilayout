@@ -48,10 +48,10 @@ typedef struct text_args_t
 } TextArgs;
 
 
-extern void rlautoDrawLine(Rectangle *bounds, void* args);
-extern void rlautoDrawRectangle(Rectangle *bounds, void* args);
-extern void rlautoDrawRectangleLines(Rectangle *bounds, void* args);
-extern void rlautoDrawText(Rectangle *bounds, void* args);
+void rlautoDrawLine(Rectangle *bounds, void* args);
+void rlautoDrawRectangle(Rectangle *bounds, void* args);
+void rlautoDrawRectangleLines(Rectangle *bounds, void* args);
+void rlautoDrawText(Rectangle *bounds, void* args);
 
 
 #ifdef __cplusplus

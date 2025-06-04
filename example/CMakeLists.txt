@@ -30,15 +30,15 @@ set(LIBS
 )
 
 
-set(CENTERED_MENU_BUTTONS_EXAMPLE rlautolayoutcenteredmenubuttonsexample)
-
-add_executable(${CENTERED_MENU_BUTTONS_EXAMPLE}
-        centered_menu_buttons_example.c
-)
-
-target_link_libraries(${CENTERED_MENU_BUTTONS_EXAMPLE} PUBLIC
-        ${LIBS}
-)
+#set(CENTERED_MENU_BUTTONS_EXAMPLE rlautolayoutcenteredmenubuttonsexample)
+#
+#add_executable(${CENTERED_MENU_BUTTONS_EXAMPLE}
+#        centered_menu_buttons_example.c
+#)
+#
+#target_link_libraries(${CENTERED_MENU_BUTTONS_EXAMPLE} PUBLIC
+#        ${LIBS}
+#)
 
 
 set(APPLICATION_GUI_EXAMPLE rlautolayoutapplicationguiexample)

@@ -121,10 +121,10 @@ int main() {
                     SetChildSpacing(24.0f);
                     SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
 
-//                    GUI {
-//                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
-//                        SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args7});
-//                    }
+                    GUI {
+                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+                        SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args7});
+                    }
 
 //                    const int navigationLinks2 = 4;
 //                    int navLinks2[4];

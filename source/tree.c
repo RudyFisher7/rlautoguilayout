@@ -57,6 +57,7 @@ static const Layout DefaultNodeLayout = {
         {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f},
         {FLT_MAX, FLT_MAX},
         0.0f,
@@ -65,7 +66,9 @@ static const Layout DefaultNodeLayout = {
         0.0f,
         {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
         {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
-        CHILD_LAYOUT_AXIS_X
+        CHILD_LAYOUT_AXIS_X,
+        0,
+        0
 };
 
 
@@ -123,14 +126,14 @@ static void UpdateFitWidths(void);
 static void UpdateFitWidthContainer(Node*);
 static void UpdateFitWidthChild(Node*);
 static void UpdateGrowWidths(void);
-static void UpdateGrowWidthContainer(Node*);
+static void UpdateGrowWidthChildren(Node *node);
 static void UpdateTextWrapping(void);
 static void UpdateTextWrappingHelper(Node*);
 static void UpdateFitHeights(void);
 static void UpdateFitHeightContainer(Node*);
 static void UpdateFitHeightChild(Node*);
 static void UpdateGrowHeights(void);
-static void UpdateGrowHeightContainer(Node*);
+static void UpdateGrowHeightChildren(Node *node);
 static void UpdatePositionsAndAlignment(void);
 static void UpdatePositionsAndAlignmentHelper(Node*);
 static void SetChildrenPositionsAlongX(Node*);
@@ -199,6 +202,7 @@ void BeginHBox()
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f},
                     {FLT_MAX, FLT_MAX},
                     0.0f,
@@ -207,7 +211,9 @@ void BeginHBox()
                     0.0f,
                     {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
-                    CHILD_LAYOUT_AXIS_X
+                    CHILD_LAYOUT_AXIS_X,
+                    0,
+                    0
             },
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -227,6 +233,7 @@ void BeginVBox()
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f},
                     {FLT_MAX, FLT_MAX},
                     0.0f,
@@ -235,7 +242,9 @@ void BeginVBox()
                     0.0f,
                     {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
-                    CHILD_LAYOUT_AXIS_Y
+                    CHILD_LAYOUT_AXIS_Y,
+                    0,
+                    0
             },
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -568,18 +577,22 @@ static void UpdateGrowWidths()
 
         if (current->firstChild)
         {
-            UpdateGrowWidthContainer(current);
+            UpdateGrowWidthChildren(current);
         }
     }
 }
 
-static void UpdateGrowWidthContainer(Node* node)
+static void UpdateGrowWidthChildren(Node* node)
 {
-    float parentRemainingWidth = (
-            node->layout.bounds.width
-            - node->layout.padding.w
-            - node->layout.padding.y
-    );
+    float parentRemainingWidth = FLT_MAX;
+    if (!node->layout.hScrollEnabled)
+    {
+        parentRemainingWidth = (
+                node->layout.bounds.width
+                - node->layout.padding.w
+                - node->layout.padding.y
+        );
+    }
 
     if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_X)
     {
@@ -589,8 +602,8 @@ static void UpdateGrowWidthContainer(Node* node)
         {
             parentRemainingWidth -= (
                     currentChild->layout.bounds.width
-                    + currentChild->layout.margins.w
                     + currentChild->layout.margins.y
+                    + currentChild->layout.margins.w
             );
 
             ++childCount;
@@ -661,6 +674,21 @@ static void UpdateGrowWidthContainer(Node* node)
                 currentChild = currentChild->rightSibling;
             }
         }
+
+        float totalChildWidth = 0.0f;
+        currentChild = node->firstChild;
+        while (currentChild)
+        {
+            totalChildWidth += (
+                    currentChild->layout.bounds.height
+                    + currentChild->layout.margins.x
+                    + currentChild->layout.margins.z
+            );
+
+            currentChild = currentChild->rightSibling;
+        }
+
+        node->layout.scrollContentBounds.height = totalChildWidth;
     }
     else
     {
@@ -684,6 +712,20 @@ static void UpdateGrowWidthContainer(Node* node)
 
             currentChild = currentChild->rightSibling;
         }
+
+        float totalChildWidth = 0.0f;
+        currentChild = node->firstChild;
+        while (currentChild)
+        {
+            totalChildWidth = fmaxf(
+                    totalChildWidth,
+                    currentChild->layout.bounds.width + currentChild->layout.margins.y + currentChild->layout.margins.w
+            );
+
+            currentChild = currentChild->rightSibling;
+        }
+
+        node->layout.scrollContentBounds.height = totalChildWidth;
     }
 }
 
@@ -827,12 +869,12 @@ static void UpdateGrowHeights()
 
         if (current->firstChild)
         {
-            UpdateGrowHeightContainer(bFSTree[i]);
+            UpdateGrowHeightChildren(bFSTree[i]);
         }
     }
 }
 
-static void UpdateGrowHeightContainer(Node* node)
+static void UpdateGrowHeightChildren(Node* node)
 {
 //    if (node->parent)
 //    {
@@ -840,11 +882,14 @@ static void UpdateGrowHeightContainer(Node* node)
 //        node->layout.maxSize.y = fminf(node->layout.maxSize.y, node->parent->layout.maxSize.y);
 //    }
 
-    float parentRemainingHeight = (
-            node->layout.bounds.height
-            - node->layout.padding.x
-            - node->layout.padding.z
-    );
+    float parentRemainingHeight = FLT_MAX;
+    if (!node->layout.hScrollEnabled) {
+        parentRemainingHeight = (
+                node->layout.bounds.height
+                - node->layout.padding.x
+                - node->layout.padding.z
+        );
+    }
 
     if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_Y)
     {
@@ -927,6 +972,21 @@ static void UpdateGrowHeightContainer(Node* node)
                 currentChild = currentChild->rightSibling;
             }
         }
+
+        float totalChildHeight = 0.0f;
+        currentChild = node->firstChild;
+        while (currentChild)
+        {
+            totalChildHeight += (
+                    currentChild->layout.bounds.height
+                    + currentChild->layout.margins.x
+                    + currentChild->layout.margins.z
+            );
+
+            currentChild = currentChild->rightSibling;
+        }
+
+        node->layout.scrollContentBounds.height = totalChildHeight;
     }
     else
     {
@@ -950,6 +1010,20 @@ static void UpdateGrowHeightContainer(Node* node)
 
             currentChild = currentChild->rightSibling;
         }
+
+        float totalChildHeight = 0.0f;
+        currentChild = node->firstChild;
+        while (currentChild)
+        {
+            totalChildHeight = fmaxf(
+                    totalChildHeight,
+                    currentChild->layout.bounds.height + currentChild->layout.margins.x + currentChild->layout.margins.z
+            );
+
+            currentChild = currentChild->rightSibling;
+        }
+
+        node->layout.scrollContentBounds.height = totalChildHeight;
     }
 }
 
@@ -1384,6 +1458,17 @@ void Draw()
 
 static void DrawInternal(Node* current)
 {
+    int isScrollContainer = current->layout.hScrollEnabled || current->layout.vScrollEnabled;
+    if (isScrollContainer)
+    {
+        BeginScissorMode(
+                (int)current->layout.bounds.x,
+                (int)current->layout.bounds.y,
+                (int)current->layout.bounds.width,
+                (int)current->layout.bounds.height
+        );
+    }
+
     current->drawFunc.draw(&current->layout.bounds, current->drawFunc.args);
 
     Node* currentChild = current->firstChild;
@@ -1391,6 +1476,11 @@ static void DrawInternal(Node* current)
     {
         DrawInternal(currentChild);
         currentChild = currentChild->rightSibling;
+    }
+
+    if (isScrollContainer)
+    {
+        EndScissorMode();
     }
 }
 

@@ -73,6 +73,7 @@ typedef struct vector2_uint8_t
 typedef struct layout_t
 {
     Rectangle bounds;
+    Rectangle scrollContentBounds;
     Vector4 margins; // padding is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
     Vector4 padding; // margin is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
     Vector2 minSize;
@@ -84,6 +85,8 @@ typedef struct layout_t
     Vector2UInt8 sizeFlags;
     Vector2UInt8 childAlignment;
     ChildLayoutAxis childLayoutAxis;
+    int hScrollEnabled;
+    int vScrollEnabled;
 } Layout;
 
 

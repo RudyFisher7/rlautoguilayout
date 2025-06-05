@@ -29,17 +29,33 @@
 #include "rlauto_layout/raygui_draw_functions.h"
 #include <raylib.h>
 
+#include <stdio.h>
+
+
+
 
 int main() {
+#ifdef RESOURCE_DIR
+    const char* ResourceDir = RESOURCE_DIR;
+#else
+    char ResourceDir[72];
+    sprintf(ResourceDir, "%s/%s", GetWorkingDirectory(), "resource");
+#endif
+    printf("Resource Directory: %s\n", ResourceDir);
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 600, "Raylib Application GUI Example");
 
-    char format_string_buffer[48];
+    char format_string_buffer[72];
+    sprintf(format_string_buffer, "%s/%s", ResourceDir, "nine-patch-rect-128x128.png");
+    Texture2D ninePatchRectTexture = LoadTexture(format_string_buffer);
 
     Args args0 = {GREEN};
     Args args1 = {BLUE};
     Args args2 = {ORANGE};
-    TextArgs args3 = {20, RAYWHITE, "Hello raylib!"};
+    TextArgs args3 = {RAYWHITE, 20, "Hello raylib!"};
+    TextureArgs args5 = {ninePatchRectTexture, RAYWHITE};
+    NPatchTextureArgs args6 = {(NPatchInfo){(Rectangle){0.0f, 0.0f, 0.0f, 0.0f}, 16, 16, 16, 16, NPATCH_NINE_PATCH}, ninePatchRectTexture, RAYWHITE};
     GuiTextArgs args4 = {0, "Hello raygui!"};
 
     GUI_ROOT {
@@ -102,17 +118,18 @@ int main() {
                     SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
                     SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_END});
                     SetChildSpacing(24.0f);
+                    SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
 
-                    const int navigationLinks2 = 4;
-                    int navLinks2[4];
-                    for (int i = 0; i < navigationLinks2; ++i) {
-                        GUI {
-                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
-                            SetSize((Vector2){32.0f, 32.0f});
-                            SetMarginsAll(8.0f);
-                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
-                        }
-                    }
+//                    const int navigationLinks2 = 4;
+//                    int navLinks2[4];
+//                    for (int i = 0; i < navigationLinks2; ++i) {
+//                        GUI {
+//                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+//                            SetMaxSizeY(32.0f);
+//                            SetMarginsAll(8.0f);
+//                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
+//                        }
+//                    }
                 }
             }
         }
@@ -128,6 +145,7 @@ int main() {
         EndDrawing();
     }
 
+    UnloadTexture(ninePatchRectTexture);
     CloseWindow();
 
     return 0;

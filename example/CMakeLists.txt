@@ -24,6 +24,12 @@ cmake_minimum_required(VERSION 3.26)
 project(rlautolayoutexample)
 
 
+set(RESOURCE_DIR
+        "${CMAKE_SOURCE_DIR}/resource"
+)
+
+add_definitions(-DRESOURCE_DIR=\"${RESOURCE_DIR}\")
+
 set(LIBS
         rlautolayout
 )

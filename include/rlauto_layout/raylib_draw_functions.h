@@ -42,10 +42,23 @@ typedef struct args_t
 
 typedef struct text_args_t
 {
-    int fontSize;
     Color color;
+    int fontSize;
     const char* text;
 } TextArgs;
+
+typedef struct texture_args_t
+{
+    Texture2D texture;
+    Color tint;
+} TextureArgs;
+
+typedef struct n_patch_texture_args_t
+{
+    NPatchInfo nPatchInfo;
+    Texture2D texture;
+    Color tint;
+} NPatchTextureArgs;
 
 
 void rlautoDrawLine(Rectangle *bounds, void* args);
@@ -53,6 +66,8 @@ void rlautoDrawRectangle(Rectangle *bounds, void* args);
 void rlautoDrawRectangleLines(Rectangle *bounds, void* args);
 void rlautoDrawText(Rectangle *bounds, void* args);
 void rlautoDrawWrappedText(Rectangle *bounds, void* args);//TODO::
+void rlautoDrawTexture(Rectangle *bounds, void* args);
+void rlautoDrawTextureNPatch(Rectangle *bounds, void* args);
 
 
 #ifdef __cplusplus

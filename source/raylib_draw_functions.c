@@ -53,11 +53,24 @@ void rlautoDrawRectangleLines(Rectangle *bounds, void *args)
 void rlautoDrawText(Rectangle *bounds, void *args)
 {
     TextArgs *argData = (TextArgs*)args;
-    DrawText(argData->text, bounds->x, bounds->y, argData->fontSize, argData->color);
+    DrawText(argData->text, (int)bounds->x, (int)bounds->y, argData->fontSize, argData->color);
 }
 
 void rlautoDrawWrappedText(Rectangle *bounds, void *args)
 {
     TextArgs *argData = (TextArgs*)args;
-    DrawText(argData->text, bounds->x, bounds->y, argData->fontSize, argData->color);
+    DrawText(argData->text, (int)bounds->x, (int)bounds->y, argData->fontSize, argData->color);
+}
+
+void rlautoDrawTexture(Rectangle *bounds, void *args)
+{
+    TextureArgs *argData = (TextureArgs*)args;
+    DrawTexturePro(argData->texture, (Rectangle){0.0f, 0.0f, (float)argData->texture.width, (float)argData->texture.height}, *bounds, (Vector2){0.0f, 0.0f}, 0.0f, argData->tint);
+}
+
+void rlautoDrawTextureNPatch(Rectangle *bounds, void *args)
+{
+    NPatchTextureArgs *argData = (NPatchTextureArgs*)args;
+    argData->nPatchInfo.source = (Rectangle){0.0f, 0.0f, (float)argData->texture.width, (float)argData->texture.height};
+    DrawTextureNPatch(argData->texture, argData->nPatchInfo, *bounds, (Vector2){0.0f, 0.0f}, 0.0f, argData->tint);
 }

@@ -675,20 +675,22 @@ static void UpdateGrowWidthChildren(Node* node)
             }
         }
 
-        float totalChildWidth = 0.0f;
-        currentChild = node->firstChild;
-        while (currentChild)
+        if (node->layout.hScrollEnabled)
         {
-            totalChildWidth += (
-                    currentChild->layout.bounds.height
-                    + currentChild->layout.margins.x
-                    + currentChild->layout.margins.z
-            );
+            float totalChildWidth = 0.0f;
+            currentChild = node->firstChild;
+            while (currentChild) {
+                totalChildWidth += (
+                        currentChild->layout.bounds.height
+                        + currentChild->layout.margins.x
+                        + currentChild->layout.margins.z
+                );
 
-            currentChild = currentChild->rightSibling;
+                currentChild = currentChild->rightSibling;
+            }
+
+            node->layout.scrollContentBounds.height = totalChildWidth;
         }
-
-        node->layout.scrollContentBounds.height = totalChildWidth;
     }
     else
     {
@@ -713,19 +715,23 @@ static void UpdateGrowWidthChildren(Node* node)
             currentChild = currentChild->rightSibling;
         }
 
-        float totalChildWidth = 0.0f;
-        currentChild = node->firstChild;
-        while (currentChild)
+        if (node->layout.hScrollEnabled)
         {
-            totalChildWidth = fmaxf(
-                    totalChildWidth,
-                    currentChild->layout.bounds.width + currentChild->layout.margins.y + currentChild->layout.margins.w
-            );
+            float totalChildWidth = 0.0f;
+            currentChild = node->firstChild;
+            while (currentChild) {
+                totalChildWidth = fmaxf(
+                        totalChildWidth,
+                        currentChild->layout.bounds.width
+                        + currentChild->layout.margins.y
+                        + currentChild->layout.margins.w
+                );
 
-            currentChild = currentChild->rightSibling;
+                currentChild = currentChild->rightSibling;
+            }
+
+            node->layout.scrollContentBounds.height = totalChildWidth;
         }
-
-        node->layout.scrollContentBounds.height = totalChildWidth;
     }
 }
 
@@ -883,7 +889,8 @@ static void UpdateGrowHeightChildren(Node* node)
 //    }
 
     float parentRemainingHeight = FLT_MAX;
-    if (!node->layout.hScrollEnabled) {
+    if (!node->layout.vScrollEnabled)
+    {
         parentRemainingHeight = (
                 node->layout.bounds.height
                 - node->layout.padding.x
@@ -973,20 +980,22 @@ static void UpdateGrowHeightChildren(Node* node)
             }
         }
 
-        float totalChildHeight = 0.0f;
-        currentChild = node->firstChild;
-        while (currentChild)
+        if (node->layout.vScrollEnabled)
         {
-            totalChildHeight += (
-                    currentChild->layout.bounds.height
-                    + currentChild->layout.margins.x
-                    + currentChild->layout.margins.z
-            );
+            float totalChildHeight = 0.0f;
+            currentChild = node->firstChild;
+            while (currentChild) {
+                totalChildHeight += (
+                        currentChild->layout.bounds.height
+                        + currentChild->layout.margins.x
+                        + currentChild->layout.margins.z
+                );
 
-            currentChild = currentChild->rightSibling;
+                currentChild = currentChild->rightSibling;
+            }
+
+            node->layout.scrollContentBounds.height = totalChildHeight;
         }
-
-        node->layout.scrollContentBounds.height = totalChildHeight;
     }
     else
     {
@@ -1011,19 +1020,23 @@ static void UpdateGrowHeightChildren(Node* node)
             currentChild = currentChild->rightSibling;
         }
 
-        float totalChildHeight = 0.0f;
-        currentChild = node->firstChild;
-        while (currentChild)
+        if (node->layout.vScrollEnabled)
         {
-            totalChildHeight = fmaxf(
-                    totalChildHeight,
-                    currentChild->layout.bounds.height + currentChild->layout.margins.x + currentChild->layout.margins.z
-            );
+            float totalChildHeight = 0.0f;
+            currentChild = node->firstChild;
+            while (currentChild) {
+                totalChildHeight = fmaxf(
+                        totalChildHeight,
+                        currentChild->layout.bounds.height
+                        + currentChild->layout.margins.x
+                        + currentChild->layout.margins.z
+                );
 
-            currentChild = currentChild->rightSibling;
+                currentChild = currentChild->rightSibling;
+            }
+
+            node->layout.scrollContentBounds.height = totalChildHeight;
         }
-
-        node->layout.scrollContentBounds.height = totalChildHeight;
     }
 }
 
@@ -1458,6 +1471,8 @@ void Draw()
 
 static void DrawInternal(Node* current)
 {
+    current->drawFunc.draw(&current->layout.bounds, current->drawFunc.args);
+
     int isScrollContainer = current->layout.hScrollEnabled || current->layout.vScrollEnabled;
     if (isScrollContainer)
     {
@@ -1468,8 +1483,6 @@ static void DrawInternal(Node* current)
                 (int)current->layout.bounds.height
         );
     }
-
-    current->drawFunc.draw(&current->layout.bounds, current->drawFunc.args);
 
     Node* currentChild = current->firstChild;
     while (currentChild)

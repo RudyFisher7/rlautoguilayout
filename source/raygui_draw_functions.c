@@ -44,11 +44,6 @@ void rlautoGuiScrollPanel(Rectangle *bounds, void* args)
     Rectangle panelContentRec = {0, 0, 340, 340 };
     Rectangle panelView = { 0 };
     Vector2 panelScroll = { 99, -20 };
-    bool showContentArea = true;
 
     GuiScrollPanel(*bounds, "Hello, scroll!", panelContentRec, &panelScroll, &panelView);
-
-    BeginScissorMode(panelView.x, panelView.y, panelView.width, panelView.height);
-    GuiGrid((Rectangle){panelRec.x + panelScroll.x, panelRec.y + panelScroll.y, panelContentRec.width, panelContentRec.height}, NULL, 16, 3, NULL);
-    EndScissorMode();
 }

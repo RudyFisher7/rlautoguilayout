@@ -65,9 +65,7 @@ static const Layout DefaultNodeLayout = {
         0.0f,
         {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
         {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
-        CHILD_LAYOUT_AXIS_X,
-        NULL,
-        0u,
+        CHILD_LAYOUT_AXIS_X
 };
 
 
@@ -209,9 +207,7 @@ void BeginHBox()
                     0.0f,
                     {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
-                    CHILD_LAYOUT_AXIS_X,
-                    NULL,
-                    0,
+                    CHILD_LAYOUT_AXIS_X
             },
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -239,9 +235,7 @@ void BeginVBox()
                     0.0f,
                     {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
-                    CHILD_LAYOUT_AXIS_Y,
-                    NULL,
-                    0,
+                    CHILD_LAYOUT_AXIS_Y
             },
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -387,11 +381,11 @@ void SetChildLayoutAxis(ChildLayoutAxis value)
 }
 
 void SetText(const char* value, int textLength, float fontSize, float lineSpacing)
-{
-    currentNode->layout.text = value;
+{// fixme::
+//    currentNode->layout.text = value;
     currentNode->layout.fontSize = fontSize;
     currentNode->layout.lineSpacing = lineSpacing;
-    currentNode->layout.textLength = textLength;
+//    currentNode->layout.textLength = textLength;
 }
 
 void SetDraw(DrawFunc value)
@@ -695,14 +689,15 @@ static void UpdateGrowWidthContainer(Node* node)
 
 static void UpdateTextWrapping()
 {
+    return;
     for (int i = 0; i < treeSize; ++i)
     {
         Node* current = bFSTree[i];
 
-        if (current->layout.text)
-        {
-            UpdateTextWrappingHelper(current);
-        }
+//        if (current->layout.text)
+//        {
+//            UpdateTextWrappingHelper(current);
+//        }
     }
 }
 
@@ -719,20 +714,20 @@ static void UpdateTextWrappingHelper(Node* node)
     int charCountPerLine = (int)(node->layout.bounds.width / fontWidth);
     int i = charCountPerLine - 1;
     int previousI = -1;
-    while (i > previousI && i < node->layout.textLength)
-    {
-        while (i > previousI && !isspace(node->layout.text[i]))
-        {
-            --i;
-        }
-
-        if (i > previousI)
-        {
-            ++lineCount;
-            previousI = i;
-            i += charCountPerLine;
-        }
-    }
+//    while (i > previousI && i < node->layout.textLength)
+//    {
+//        while (i > previousI && !isspace(node->layout.text[i]))
+//        {
+//            --i;
+//        }
+//
+//        if (i > previousI)
+//        {
+//            ++lineCount;
+//            previousI = i;
+//            i += charCountPerLine;
+//        }
+//    }
 
     node->layout.bounds.height = fminf(
             (float)(

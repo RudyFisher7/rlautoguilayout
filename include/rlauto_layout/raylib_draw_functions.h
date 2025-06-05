@@ -61,11 +61,16 @@ typedef struct n_patch_texture_args_t
 } NPatchTextureArgs;
 
 
+/* Primitive Drawing */
 void rlautoDrawLine(Rectangle *bounds, void* args);
 void rlautoDrawRectangle(Rectangle *bounds, void* args);
 void rlautoDrawRectangleLines(Rectangle *bounds, void* args);
+
+/* Text Drawing */
 void rlautoDrawText(Rectangle *bounds, void* args);
 void rlautoDrawWrappedText(Rectangle *bounds, void* args);//TODO::
+
+/* Texture Drawing */
 void rlautoDrawTexture(Rectangle *bounds, void* args);
 void rlautoDrawTextureNPatch(Rectangle *bounds, void* args);
 

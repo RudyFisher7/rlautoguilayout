@@ -84,8 +84,6 @@ typedef struct layout_t
     Vector2UInt8 sizeFlags;
     Vector2UInt8 childAlignment;
     ChildLayoutAxis childLayoutAxis;
-    const char* text;
-    size_t textLength;
 } Layout;
 
 

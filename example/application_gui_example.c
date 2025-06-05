@@ -57,6 +57,7 @@ int main() {
     TextureArgs args5 = {ninePatchRectTexture, RAYWHITE};
     NPatchTextureArgs args6 = {(NPatchInfo){(Rectangle){0.0f, 0.0f, 0.0f, 0.0f}, 16, 16, 16, 16, NPATCH_NINE_PATCH}, ninePatchRectTexture, RAYWHITE};
     GuiTextArgs args4 = {0, "Hello raygui!"};
+    GuiScrollArgs args7 = {(Vector2){0.0f, 0.0f}, 0};
 
     GUI_ROOT {
         GUI_VBOX {
@@ -120,6 +121,11 @@ int main() {
                     SetChildSpacing(24.0f);
                     SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
 
+//                    GUI {
+//                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+//                        SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args7});
+//                    }
+
 //                    const int navigationLinks2 = 4;
 //                    int navLinks2[4];
 //                    for (int i = 0; i < navigationLinks2; ++i) {
@@ -142,6 +148,8 @@ int main() {
         BeginDrawing();
         ClearBackground(BLACK);
         Draw();
+
+//        rlautoGuiScrollPanel(NULL, NULL);
         EndDrawing();
     }
 

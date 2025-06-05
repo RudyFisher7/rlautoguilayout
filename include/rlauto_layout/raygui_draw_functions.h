@@ -29,6 +29,8 @@
 
 #include "rlauto_layout/raylib_draw_functions.h"
 
+#include "rlauto_layout/type_defs.h"
+
 #include <raylib.h>
 
 #ifdef __cplusplus
@@ -44,14 +46,12 @@ typedef struct gui_text_args_t
 
 typedef struct gui_scroll_args_t
 {
-    Rectangle view;
-    Vector2 scroll;
     int returnedValue;
 } GuiScrollArgs;
 
 
-void rlautoGuiButton(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
-void rlautoGuiScrollPanel(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);//TODO::
+void rlautoGuiButton(Layout *layout, void *args);
+void rlautoGuiScrollPanel(Layout *layout, void *args);//TODO::
 
 
 #ifdef __cplusplus

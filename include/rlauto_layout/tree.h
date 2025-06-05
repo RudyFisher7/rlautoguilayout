@@ -77,7 +77,7 @@ void Draw(void);
  * @param bounds Unused. Can be NULL.
  * @param args Unused. Can be NULL.
  */
-void PassThroughDraw(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
+void PassThroughDraw(Layout *layout, void *args);
 
 
 #define GUI_ROOT static int rlautoMacroIndex = 0;\

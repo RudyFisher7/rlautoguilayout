@@ -58,8 +58,10 @@ static const Layout DefaultNodeLayout = {
         {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f},
         {FLT_MAX, FLT_MAX},
+        {0.0f, 0.0f},
         0.0f,
         0.0f,
         0.0f,
@@ -153,9 +155,9 @@ static void SetChildrenYEndAlongY(Node*);
 static int AreEqualApproxF(float, float);
 
 
-void PassThroughDraw(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void PassThroughDraw(Layout *layout, void *args)
 {
-    (void)bounds;
+    (void)layout;
     (void)args;
 }
 
@@ -203,8 +205,10 @@ void BeginHBox()
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f},
                     {FLT_MAX, FLT_MAX},
+                    {0.0f, 0.0f},
                     0.0f,
                     0.0f,
                     0.0f,
@@ -234,8 +238,10 @@ void BeginVBox()
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f, 0.0f, 0.0f},
+                    {0.0f, 0.0f, 0.0f, 0.0f},
                     {0.0f, 0.0f},
                     {FLT_MAX, FLT_MAX},
+                    {0.0f, 0.0f},
                     0.0f,
                     0.0f,
                     0.0f,
@@ -695,7 +701,7 @@ static void UpdateGrowWidthChildren(Node* node)
                 currentChild = currentChild->rightSibling;
             }
 
-            node->layout.scrollContentBounds.height = totalChildWidth;
+            node->layout.scrollContentBounds.width = totalChildWidth;
         }
     }
     else
@@ -736,7 +742,7 @@ static void UpdateGrowWidthChildren(Node* node)
                 currentChild = currentChild->rightSibling;
             }
 
-            node->layout.scrollContentBounds.height = totalChildWidth;
+            node->layout.scrollContentBounds.width = totalChildWidth;
         }
     }
 }
@@ -1131,7 +1137,7 @@ static void SetChildrenXBeginAlongX(Node* current)
         currentChild = currentChild->rightSibling;
     }
 
-    float currentX = current->layout.bounds.x + current->layout.padding.w;
+    float currentX = current->layout.bounds.x + current->layout.padding.w + current->layout.scroll.x;
 
     currentChild = current->firstChild;
     while (currentChild)
@@ -1151,7 +1157,7 @@ static void SetChildrenXBeginAlongX(Node* current)
 
 static void SetChildrenYBeginAlongX(Node* current)
 {
-    float currentY = current->layout.bounds.y + current->layout.padding.x;
+    float currentY = current->layout.bounds.y + current->layout.padding.x + current->layout.scroll.y;
     Node *currentChild = current->firstChild;
     while (currentChild)
     {
@@ -1184,15 +1190,15 @@ static void SetChildrenXCenterAlongX(Node* current)
 
     float childSpacing = current->layout.childSpacing * (float) (childCount - 1);
 
-    float currentX = 0.0f;
+    float currentX = current->layout.scroll.x;
     switch (current->layout.sizeFlags.x)
     {
         case SIZE_FLAGS_FIT:
-            currentX = current->layout.bounds.x + current->layout.padding.w;
+            currentX += current->layout.bounds.x + current->layout.padding.w;
             break;
         case SIZE_FLAGS_GROW:
         case SIZE_FLAGS_FIXED:
-            currentX = current->layout.bounds.x + current->layout.padding.w + ((current->layout.bounds.width - childWidths - childSpacing) / 2.0f);
+            currentX += current->layout.bounds.x + current->layout.padding.w + ((current->layout.bounds.width - childWidths - childSpacing) / 2.0f);
             break;
         default:
             break;
@@ -1226,6 +1232,7 @@ static void SetChildrenYCenterAlongX(Node* current)
         float currentY = (
                 currentYParentPart
                 - (currentChild->layout.bounds.height / 2.0f)
+                + current->layout.scroll.y
         );
 
         currentChild->layout.bounds.y = currentY;
@@ -1245,7 +1252,7 @@ static void SetChildrenXEndAlongX(Node* current)
         currentChild = currentChild->rightSibling;
     }
 
-    float currentX = current->layout.bounds.x + current->layout.bounds.width - current->layout.padding.y;
+    float currentX = current->layout.bounds.x + current->layout.bounds.width - current->layout.padding.y + current->layout.scroll.x;
 
     currentChild = current->lastChild;
     while (currentChild)
@@ -1270,7 +1277,7 @@ static void SetChildrenYEndAlongX(Node* current)
     Node *currentChild = current->firstChild;
     while (currentChild)
     {
-        float currentY = currentYParentPart - currentChild->layout.bounds.height - currentChild->layout.margins.z;
+        float currentY = currentYParentPart - currentChild->layout.bounds.height - currentChild->layout.margins.z + current->layout.scroll.y;
         currentChild->layout.bounds.y = currentY;
 
         currentChild = currentChild->rightSibling;
@@ -1321,20 +1328,20 @@ static void SetChildrenYBeginAlongY(Node* current)
     int childCount = 0;
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         ++childCount;
 
         currentChild = currentChild->rightSibling;
     }
 
-    float currentY = current->layout.bounds.y + current->layout.padding.x;
+    float currentY = current->layout.bounds.y + current->layout.padding.x + current->layout.scroll.y;
 
     currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float topMarginAdjustment = currentChild->layout.margins.x;
         if (currentChild->leftSibling)
-{
+        {
             topMarginAdjustment += currentChild->leftSibling->layout.margins.y + current->layout.childSpacing;
         }
 
@@ -1347,10 +1354,10 @@ static void SetChildrenYBeginAlongY(Node* current)
 
 static void SetChildrenXBeginAlongY(Node* current)
 {
-    float currentX = current->layout.bounds.x + current->layout.padding.w;
+    float currentX = current->layout.bounds.x + current->layout.padding.w + current->layout.scroll.x;
     Node *currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float leftMarginAdjustment = currentChild->layout.margins.w;
         currentChild->layout.bounds.x = currentX + leftMarginAdjustment;
 
@@ -1380,15 +1387,15 @@ static void SetChildrenYCenterAlongY(Node* current)
 
     float childSpacing = current->layout.childSpacing * (float) (childCount - 1);
 
-    float currentY = 0.0f;
+    float currentY = current->layout.scroll.y;
     switch (current->layout.sizeFlags.y)
 {
         case SIZE_FLAGS_FIT:
-            currentY = current->layout.bounds.y + current->layout.padding.x;
+            currentY += current->layout.bounds.y + current->layout.padding.x;
             break;
         case SIZE_FLAGS_GROW:
         case SIZE_FLAGS_FIXED:
-            currentY = current->layout.bounds.y + current->layout.padding.x + ((current->layout.bounds.height - childHeights - childSpacing) / 2.0f);
+            currentY += current->layout.bounds.y + current->layout.padding.x + ((current->layout.bounds.height - childHeights - childSpacing) / 2.0f);
             break;
         default:
             break;
@@ -1422,6 +1429,7 @@ static void SetChildrenXCenterAlongY(Node* current)
         float currentX = (
                 currentXParentPart
                 - (currentChild->layout.bounds.width / 2.0f)
+                + current->layout.scroll.x
         );
 
         currentChild->layout.bounds.x = currentX;
@@ -1441,7 +1449,7 @@ static void SetChildrenYEndAlongY(Node* current)
         currentChild = currentChild->rightSibling;
     }
 
-    float currentY = current->layout.bounds.y + current->layout.bounds.height - current->layout.padding.z;
+    float currentY = current->layout.bounds.y + current->layout.bounds.height - current->layout.padding.z + current->layout.scroll.y;
 
     currentChild = current->lastChild;
     while (currentChild)
@@ -1466,7 +1474,7 @@ static void SetChildrenXEndAlongY(Node* current)
     Node *currentChild = current->firstChild;
     while (currentChild)
     {
-        float currentX = currentXParentPart - currentChild->layout.bounds.width - currentChild->layout.margins.y;
+        float currentX = currentXParentPart - currentChild->layout.bounds.width - currentChild->layout.margins.y + current->layout.scroll.x;
         currentChild->layout.bounds.x = currentX;
 
         currentChild = currentChild->rightSibling;
@@ -1480,16 +1488,16 @@ void Draw()
 
 static void DrawInternal(Node* current)
 {
-    current->drawFunc.draw(&current->layout.bounds, &current->layout.scrollContentBounds, current->drawFunc.args);
+    current->drawFunc.draw(&current->layout, current->drawFunc.args);
 
     int isScrollContainer = current->layout.xScrollEnabled || current->layout.yScrollEnabled;
     if (isScrollContainer)
     {
         BeginScissorMode(
-                (int)current->layout.bounds.x,
-                (int)current->layout.bounds.y,
-                (int)current->layout.bounds.width,
-                (int)current->layout.bounds.height
+                (int)current->layout.scrollView.x,
+                (int)current->layout.scrollView.y,
+                (int)current->layout.scrollView.width,
+                (int)current->layout.scrollView.height
         );
     }
 

@@ -26,58 +26,51 @@
 #include "rlauto_layout/raylib_draw_functions.h"
 
 
-void rlautoDrawLine(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawLine(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     Args *argData = (Args*)args;
     DrawLine(
-            (int)bounds->x,
-            (int)bounds->y,
-            (int)bounds->x + (int)bounds->width,
-            (int)bounds->y,
+            (int)layout->bounds.x,
+            (int)layout->bounds.y,
+            (int)layout->bounds.x + (int)layout->bounds.width,
+            (int)layout->bounds.y,
             argData->color
     );
 }
 
-void rlautoDrawRectangle(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawRectangle(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     Args *argData = (Args*)args;
-    DrawRectangleRec(*bounds, argData->color);
+    DrawRectangleRec(layout->bounds, argData->color);
 }
 
-void rlautoDrawRectangleLines(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawRectangleLines(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     Args *argData = (Args*)args;
-    DrawRectangleLines((int)bounds->x, (int)bounds->y, (int)bounds->width, (int)bounds->height, argData->color);
+    DrawRectangleLines((int)layout->bounds.x, (int)layout->bounds.y, (int)layout->bounds.width, (int)layout->bounds.height, argData->color);
 }
 
-void rlautoDrawText(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawText(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     TextArgs *argData = (TextArgs*)args;
-    DrawText(argData->text, (int)bounds->x, (int)bounds->y, argData->fontSize, argData->color);
+    DrawText(argData->text, (int)layout->bounds.x, (int)layout->bounds.y, argData->fontSize, argData->color);
 }
 
-void rlautoDrawWrappedText(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawWrappedText(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     TextArgs *argData = (TextArgs*)args;
-    DrawText(argData->text, (int)bounds->x, (int)bounds->y, argData->fontSize, argData->color);
+    DrawText(argData->text, (int)layout->bounds.x, (int)layout->bounds.y, argData->fontSize, argData->color);
 }
 
-void rlautoDrawTexture(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawTexture(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     TextureArgs *argData = (TextureArgs*)args;
-    DrawTexturePro(argData->texture, (Rectangle){0.0f, 0.0f, (float)argData->texture.width, (float)argData->texture.height}, *bounds, (Vector2){0.0f, 0.0f}, 0.0f, argData->tint);
+    DrawTexturePro(argData->texture, (Rectangle){0.0f, 0.0f, (float)argData->texture.width, (float)argData->texture.height}, layout->bounds, (Vector2){0.0f, 0.0f}, 0.0f, argData->tint);
 }
 
-void rlautoDrawTextureNPatch(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
+void rlautoDrawTextureNPatch(Layout *layout, void *args)
 {
-    (void)scrollContentBounds;
     NPatchTextureArgs *argData = (NPatchTextureArgs*)args;
     argData->nPatchInfo.source = (Rectangle){0.0f, 0.0f, (float)argData->texture.width, (float)argData->texture.height};
-    DrawTextureNPatch(argData->texture, argData->nPatchInfo, *bounds, (Vector2){0.0f, 0.0f}, 0.0f, argData->tint);
+    DrawTextureNPatch(argData->texture, argData->nPatchInfo, layout->bounds, (Vector2){0.0f, 0.0f}, 0.0f, argData->tint);
 }

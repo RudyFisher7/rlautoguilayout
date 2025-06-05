@@ -27,6 +27,8 @@
 #define RLAUTO_LAYOUT_RAYLIB_DRAW_FUNCTIONS_H
 
 
+#include "rlauto_layout/type_defs.h"
+
 #include <raylib.h>
 
 
@@ -62,17 +64,17 @@ typedef struct n_patch_texture_args_t
 
 
 /* Primitive Drawing */
-void rlautoDrawLine(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
-void rlautoDrawRectangle(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
-void rlautoDrawRectangleLines(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
+void rlautoDrawLine(Layout *layout, void *args);
+void rlautoDrawRectangle(Layout *layout, void *args);
+void rlautoDrawRectangleLines(Layout *layout, void *args);
 
 /* Text Drawing */
-void rlautoDrawText(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
-void rlautoDrawWrappedText(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);//TODO::
+void rlautoDrawText(Layout *layout, void *args);
+void rlautoDrawWrappedText(Layout *layout, void *args);//TODO::
 
 /* Texture Drawing */
-void rlautoDrawTexture(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
-void rlautoDrawTextureNPatch(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
+void rlautoDrawTexture(Layout *layout, void *args);
+void rlautoDrawTextureNPatch(Layout *layout, void *args);
 
 
 #ifdef __cplusplus

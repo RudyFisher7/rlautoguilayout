@@ -74,10 +74,12 @@ typedef struct layout_t
 {
     Rectangle bounds;
     Rectangle scrollContentBounds;
+    Rectangle scrollView;
     Vector4 margins; // padding is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
     Vector4 padding; // margin is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
     Vector2 minSize;
     Vector2 maxSize;
+    Vector2 scroll;
     float childSpacing;
     float fontSize;
     float lineSpacing;
@@ -92,7 +94,7 @@ typedef struct layout_t
 
 typedef struct draw_func_t
 {
-    void(*draw)(Rectangle*, Rectangle*, void*);
+    void(*draw)(Layout*, void*);
     void* args;
 } DrawFunc;
 

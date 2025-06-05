@@ -1061,6 +1061,9 @@ static void UpdatePositionsAndAlignmentHelper(Node* node)
             default:
                 break;
         }
+
+        node->layout.scrollContentBounds.x = node->firstChild->layout.bounds.x;
+        node->layout.scrollContentBounds.y = node->firstChild->layout.bounds.y;
     }
 
     Node* current = node->firstChild;

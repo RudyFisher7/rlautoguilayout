@@ -31,19 +31,15 @@
 #include <raygui.h>
 
 
-void rlautoGuiButton(Rectangle *bounds, void* args)
+void rlautoGuiButton(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
 {
+    (void)scrollContentBounds;
     GuiTextArgs *argData = (GuiTextArgs*)args;
     argData->returnedValue = GuiButton(*bounds, argData->text);
 }
 
-void rlautoGuiScrollPanel(Rectangle *bounds, void* args)
+void rlautoGuiScrollPanel(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
 {
     GuiScrollArgs *argData = (GuiScrollArgs*)args;
-    Rectangle panelRec = { 20, 40, 200, 150 };
-    Rectangle panelContentRec = {0, 0, 340, 340 };
-    Rectangle panelView = { 0 };
-    Vector2 panelScroll = { 99, -20 };
-
-    GuiScrollPanel(*bounds, "Hello, scroll!", panelContentRec, &panelScroll, &panelView);
+    argData->returnedValue = GuiScrollPanel(*bounds, NULL, *scrollContentBounds, &argData->scroll, &argData->view);
 }

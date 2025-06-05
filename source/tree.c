@@ -126,14 +126,14 @@ static void UpdateFitWidths(void);
 static void UpdateFitWidthContainer(Node*);
 static void UpdateFitWidthChild(Node*);
 static void UpdateGrowWidths(void);
-static void UpdateGrowWidthChildren(Node *node);
+static void UpdateGrowWidthChildren(Node*);
 static void UpdateTextWrapping(void);
 static void UpdateTextWrappingHelper(Node*);
 static void UpdateFitHeights(void);
 static void UpdateFitHeightContainer(Node*);
 static void UpdateFitHeightChild(Node*);
 static void UpdateGrowHeights(void);
-static void UpdateGrowHeightChildren(Node *node);
+static void UpdateGrowHeightChildren(Node*);
 static void UpdatePositionsAndAlignment(void);
 static void UpdatePositionsAndAlignmentHelper(Node*);
 static void SetChildrenPositionsAlongX(Node*);
@@ -150,10 +150,10 @@ static void SetChildrenXEndAlongX(Node*);
 static void SetChildrenYEndAlongX(Node*);
 static void SetChildrenXEndAlongY(Node*);
 static void SetChildrenYEndAlongY(Node*);
-static int AreEqualApproxF(float a, float b);
+static int AreEqualApproxF(float, float);
 
 
-void PassThroughDraw(Rectangle *bounds, void *args)
+void PassThroughDraw(Rectangle *bounds, Rectangle *scrollContentBounds, void *args)
 {
     (void)bounds;
     (void)args;
@@ -397,6 +397,12 @@ void SetText(const char* value, int textLength, float fontSize, float lineSpacin
 //    currentNode->layout.textLength = textLength;
 }
 
+void SetScrollEnabled(int x, int y)
+{
+    currentNode->layout.xScrollEnabled = x;
+    currentNode->layout.yScrollEnabled = y;
+}
+
 void SetDraw(DrawFunc value)
 {
     currentNode->drawFunc = value;
@@ -585,7 +591,7 @@ static void UpdateGrowWidths()
 static void UpdateGrowWidthChildren(Node* node)
 {
     float parentRemainingWidth = FLT_MAX;
-    if (!node->layout.hScrollEnabled)
+    if (!node->layout.xScrollEnabled)
     {
         parentRemainingWidth = (
                 node->layout.bounds.width
@@ -675,7 +681,7 @@ static void UpdateGrowWidthChildren(Node* node)
             }
         }
 
-        if (node->layout.hScrollEnabled)
+        if (node->layout.xScrollEnabled)
         {
             float totalChildWidth = 0.0f;
             currentChild = node->firstChild;
@@ -715,7 +721,7 @@ static void UpdateGrowWidthChildren(Node* node)
             currentChild = currentChild->rightSibling;
         }
 
-        if (node->layout.hScrollEnabled)
+        if (node->layout.xScrollEnabled)
         {
             float totalChildWidth = 0.0f;
             currentChild = node->firstChild;
@@ -889,7 +895,7 @@ static void UpdateGrowHeightChildren(Node* node)
 //    }
 
     float parentRemainingHeight = FLT_MAX;
-    if (!node->layout.vScrollEnabled)
+    if (!node->layout.yScrollEnabled)
     {
         parentRemainingHeight = (
                 node->layout.bounds.height
@@ -980,7 +986,7 @@ static void UpdateGrowHeightChildren(Node* node)
             }
         }
 
-        if (node->layout.vScrollEnabled)
+        if (node->layout.yScrollEnabled)
         {
             float totalChildHeight = 0.0f;
             currentChild = node->firstChild;
@@ -1020,7 +1026,7 @@ static void UpdateGrowHeightChildren(Node* node)
             currentChild = currentChild->rightSibling;
         }
 
-        if (node->layout.vScrollEnabled)
+        if (node->layout.yScrollEnabled)
         {
             float totalChildHeight = 0.0f;
             currentChild = node->firstChild;
@@ -1474,9 +1480,9 @@ void Draw()
 
 static void DrawInternal(Node* current)
 {
-    current->drawFunc.draw(&current->layout.bounds, current->drawFunc.args);
+    current->drawFunc.draw(&current->layout.bounds, &current->layout.scrollContentBounds, current->drawFunc.args);
 
-    int isScrollContainer = current->layout.hScrollEnabled || current->layout.vScrollEnabled;
+    int isScrollContainer = current->layout.xScrollEnabled || current->layout.yScrollEnabled;
     if (isScrollContainer)
     {
         BeginScissorMode(

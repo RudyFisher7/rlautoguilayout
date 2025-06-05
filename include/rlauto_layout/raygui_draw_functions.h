@@ -44,13 +44,14 @@ typedef struct gui_text_args_t
 
 typedef struct gui_scroll_args_t
 {
+    Rectangle view;
     Vector2 scroll;
     int returnedValue;
 } GuiScrollArgs;
 
 
-void rlautoGuiButton(Rectangle *bounds, void* args);
-void rlautoGuiScrollPanel(Rectangle *bounds, void* args);//TODO::
+void rlautoGuiButton(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);
+void rlautoGuiScrollPanel(Rectangle *bounds, Rectangle *scrollContentBounds, void *args);//TODO::
 
 
 #ifdef __cplusplus

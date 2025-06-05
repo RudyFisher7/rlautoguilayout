@@ -85,14 +85,14 @@ typedef struct layout_t
     Vector2UInt8 sizeFlags;
     Vector2UInt8 childAlignment;
     ChildLayoutAxis childLayoutAxis;
-    int hScrollEnabled;
-    int vScrollEnabled;
+    int xScrollEnabled;
+    int yScrollEnabled;
 } Layout;
 
 
 typedef struct draw_func_t
 {
-    void(*draw)(Rectangle*, void*);
+    void(*draw)(Rectangle*, Rectangle*, void*);
     void* args;
 } DrawFunc;
 

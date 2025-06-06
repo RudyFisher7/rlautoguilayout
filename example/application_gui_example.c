@@ -57,7 +57,6 @@ int main() {
     TextureArgs args5 = {ninePatchRectTexture, RAYWHITE};
     NPatchTextureArgs args6 = {(NPatchInfo){(Rectangle){0.0f, 0.0f, 0.0f, 0.0f}, 16, 16, 16, 16, NPATCH_NINE_PATCH}, ninePatchRectTexture, RAYWHITE};
     GuiTextArgs args4 = {0, "Hello raygui!"};
-    GuiScrollArgs args7 = {0};
 
     GUI_ROOT {
         GUI_VBOX {
@@ -120,7 +119,7 @@ int main() {
                     SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN});
                     SetChildSpacing(24.0f);
                     SetScrollEnabled(1, 1);
-                    SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args7});
+                    SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args4});
 
 //                    GUI {
 //                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);

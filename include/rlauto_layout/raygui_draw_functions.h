@@ -44,14 +44,9 @@ typedef struct gui_text_args_t
     const char* text;
 } GuiTextArgs;
 
-typedef struct gui_scroll_args_t
-{
-    int returnedValue;
-} GuiScrollArgs;
-
 
 void rlautoGuiButton(Layout *layout, void *args);
-void rlautoGuiScrollPanel(Layout *layout, void *args);//TODO::
+void rlautoGuiScrollPanel(Layout *layout, void *args);
 
 
 #ifdef __cplusplus

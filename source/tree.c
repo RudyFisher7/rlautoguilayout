@@ -576,12 +576,9 @@ static void UpdateFitWidthContainer(Node* node)
     width += node->layout.padding.y + node->layout.padding.w;
 
     // set the parent's width to the calculated width
-//        node->layout.bounds.width = width;
-
-
     if (!node->layout.xScrollEnabled)
     {
-        node->layout.bounds.width = fmaxf(width, node->layout.minSize.x);
+        node->layout.bounds.width = fmaxf(width, node->layout.minSize.x);//fixme:: i dont think this is quite right
     }
     else
     {
@@ -890,7 +887,7 @@ static void UpdateFitHeightContainer(Node* node)
 //        node->layout.bounds.width = height;
     if (!node->layout.xScrollEnabled)
     {
-        node->layout.bounds.height = fmaxf(height, node->layout.minSize.y);
+        node->layout.bounds.height = fmaxf(height, node->layout.minSize.y);//fixme:: i dont think this is quite right
     }
     else
     {

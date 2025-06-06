@@ -39,6 +39,6 @@ void rlautoGuiButton(Layout *layout, void *args)
 
 void rlautoGuiScrollPanel(Layout *layout, void *args)
 {
-    GuiScrollArgs *argData = (GuiScrollArgs*)args;
-    argData->returnedValue = GuiScrollPanel(layout->bounds, "Hello, scroll!", layout->scrollContentBounds, &layout->scroll, &layout->scrollView);
+    GuiTextArgs *argData = (GuiTextArgs*)args;
+    argData->returnedValue = GuiScrollPanel(layout->bounds, argData->text, layout->scrollContentBounds, &layout->scroll, &layout->scrollView);
 }

@@ -122,22 +122,22 @@ int main() {
                     SetScrollEnabled(1, 1);
                     SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args7});
 
-                    GUI {
-                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
-                        SetMaxSize((Vector2){600.0f, 600.0f});
-                        SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
-                    }
-
-//                    const int navigationLinks2 = 4;
-//                    int navLinks2[4];
-//                    for (int i = 0; i < navigationLinks2; ++i) {
-//                        GUI {
-//                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
-//                            SetMaxSizeY(32.0f);
-//                            SetMarginsAll(8.0f);
-//                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
-//                        }
+//                    GUI {
+//                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+//                        SetMaxSize((Vector2){600.0f, 600.0f});
+//                        SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
 //                    }
+
+                    const int navigationLinks2 = 4;
+                    int navLinks2[4];
+                    for (int i = 0; i < navigationLinks2; ++i) {
+                        GUI {
+                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+                            SetMaxSize((Vector2){800.0f, 200.0f});
+                            SetMarginsAll(64.0f);
+                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
+                        }
+                    }
                 }
             }
         }

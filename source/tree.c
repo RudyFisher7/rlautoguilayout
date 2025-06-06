@@ -546,8 +546,12 @@ static void UpdateFitWidthContainer(Node* node)
             Layout* layout = &current->layout;
             width += layout->bounds.width + layout->margins.y + layout->margins.w;
 
-            // propogate min widths up the tree
-            node->layout.minSize.x += layout->minSize.x + layout->margins.y + layout->margins.w;
+            // propogate min widths up the tree, unless this node is a scroll container
+            if (!node->layout.xScrollEnabled)
+            {
+                node->layout.minSize.x += layout->minSize.x + layout->margins.y + layout->margins.w;
+            }
+
             ++childCount;
 
             current = current->rightSibling;
@@ -573,7 +577,16 @@ static void UpdateFitWidthContainer(Node* node)
 
     // set the parent's width to the calculated width
 //        node->layout.bounds.width = width;
-    node->layout.bounds.width = fmaxf(width, node->layout.minSize.x);
+
+
+    if (!node->layout.xScrollEnabled)
+    {
+        node->layout.bounds.width = fmaxf(width, node->layout.minSize.x);
+    }
+    else
+    {
+        node->layout.bounds.width = 0.0f;
+    }
 }
 
 static void UpdateFitWidthChild(Node* node)
@@ -845,7 +858,11 @@ static void UpdateFitHeightContainer(Node* node)
             height += layout->bounds.height + layout->margins.x + layout->margins.z;
 
             // propogate min heights up the tree
-            node->layout.minSize.y += layout->minSize.y + layout->margins.x + layout->margins.z;
+            if (!node->layout.yScrollEnabled)
+            {
+                node->layout.minSize.y += layout->minSize.y + layout->margins.x + layout->margins.z;
+            }
+
             ++childCount;
 
             current = current->rightSibling;
@@ -871,7 +888,14 @@ static void UpdateFitHeightContainer(Node* node)
 
     // set the parent's height to the calculated height
 //        node->layout.bounds.width = height;
-    node->layout.bounds.height = fmaxf(height, node->layout.minSize.y);
+    if (!node->layout.xScrollEnabled)
+    {
+        node->layout.bounds.height = fmaxf(height, node->layout.minSize.y);
+    }
+    else
+    {
+        node->layout.bounds.height = 0.0f;
+    }
 }
 
 static void UpdateFitHeightChild(Node* node)

@@ -48,11 +48,6 @@
 #endif
 
 // Data used inside this translation unit.
-static int currentIndex = 0;
-static int treeSize = 0;
-static Node tree[RLAUTO_LAYOUT_TREE_CAPACITY];
-static Node* bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
-static Node* currentNode = NULL;
 static const Layout DefaultNodeLayout = {
         {0.0f, 0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 0.0f},
@@ -73,13 +68,23 @@ static const Layout DefaultNodeLayout = {
         0
 };
 
+static int currentIndex = 0;
+static int treeSize = 0;
+static Node* currentNode = NULL;
+static Node tree[RLAUTO_LAYOUT_TREE_CAPACITY];
+static Node* bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
+
+static int isScissorModeActive = 0;
+static int scissorStackTop = -1;
+static Rectangle scissorStack[RLAUTO_LAYOUT_TREE_CAPACITY];
+
 
 #ifndef ENABLE_DEBUG
 #define ENABLE_DEBUG 1
 #endif
 
 #if ENABLE_DEBUG
-#define DEBUG_DATA int debugCurrentIndex = currentIndex; int debugTreeSize = treeSize; Node* debugCurrentNode = currentNode;
+#define DEBUG_DATA int debugCurrentIndex = currentIndex; int debugTreeSize = treeSize; Node* debugCurrentNode = currentNode; int debugScissorStackTop = scissorStackTop;
 #else
 #define DEBUG_DATA ((void)0);
 #endif
@@ -153,6 +158,8 @@ static void SetChildrenYEndAlongX(Node*);
 static void SetChildrenXEndAlongY(Node*);
 static void SetChildrenYEndAlongY(Node*);
 static int AreEqualApproxF(float, float);
+static void PushScissor(Rectangle*);
+static void PopScissor(void);
 
 
 void PassThroughDraw(Layout *layout, void *args)
@@ -1514,12 +1521,20 @@ static void DrawInternal(Node* current)
     int isScrollContainer = current->layout.xScrollEnabled || current->layout.yScrollEnabled;
     if (isScrollContainer)
     {
+        if (isScissorModeActive)
+        {
+            fprintf(stderr, "Nested scroll containers not supported!\n");
+        }
+
+        isScissorModeActive = 1;
         BeginScissorMode(
                 (int)current->layout.scrollView.x,
                 (int)current->layout.scrollView.y,
                 (int)current->layout.scrollView.width,
                 (int)current->layout.scrollView.height
         );
+
+//        PushScissor(&current->layout.scrollView);
     }
 
     Node* currentChild = current->firstChild;
@@ -1532,6 +1547,8 @@ static void DrawInternal(Node* current)
     if (isScrollContainer)
     {
         EndScissorMode();
+        isScissorModeActive = 0;
+//        PopScissor();
     }
 }
 
@@ -1539,6 +1556,42 @@ static void DrawInternal(Node* current)
 static int AreEqualApproxF(float a, float b)
 {
     return fabsf(a - b) < FLT_EPSILON;
+}
+
+
+static void PushScissor(Rectangle* view)
+{
+    scissorStack[++scissorStackTop] = *view;
+    BeginScissorMode(
+            (int)scissorStack[scissorStackTop].x,
+            (int)scissorStack[scissorStackTop].y,
+            (int)scissorStack[scissorStackTop].width,
+            (int)scissorStack[scissorStackTop].height
+    );
+
+    DEBUG_DATA
+}
+
+static void PopScissor(void)
+{
+    if (scissorStackTop > 0)
+    {
+        --scissorStackTop;
+        BeginScissorMode(
+                (int)scissorStack[scissorStackTop].x,
+                (int)scissorStack[scissorStackTop].y,
+                (int)scissorStack[scissorStackTop].width,
+                (int)scissorStack[scissorStackTop].height
+        );
+    }
+    else
+    {
+        scissorStackTop = -1;
+        EndScissorMode();
+    }
+
+    DEBUG_DATA
+    int i = 0;
 }
 
 

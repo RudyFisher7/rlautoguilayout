@@ -117,23 +117,24 @@ int main() {
                 GUI_VBOX {
                     SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
                     SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN});
-                    SetChildSpacing(24.0f);
+                    SetChildSpacing(4.0f);
+                    SetPaddingAll(8.0f);
                     SetScrollEnabled(1, 1);
                     SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args4});
 
-//                    GUI {
-//                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
-//                        SetMaxSize((Vector2){600.0f, 600.0f});
-//                        SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
-//                    }
+                    GUI {
+                        SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+                        SetMaxSize((Vector2){600.0f, 600.0f});
+                        SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
+                    }
 
                     const int navigationLinks2 = 4;
                     int navLinks2[4];
                     for (int i = 0; i < navigationLinks2; ++i) {
                         GUI {
                             SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
-                            SetMaxSize((Vector2){800.0f, 200.0f});
-                            SetMarginsAll(64.0f);
+                            SetMaxSize((Vector2){1000.0f, 100.0f});
+                            SetMarginsAll(24.0f);
                             SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
                         }
                     }

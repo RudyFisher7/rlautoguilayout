@@ -75,8 +75,8 @@ typedef struct layout_t
     Rectangle bounds;
     Rectangle scrollContentBounds;
     Rectangle scrollView;
-    Vector4 margins; // padding is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
-    Vector4 padding; // margin is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
+    Vector4 margins; // margins are in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
+    Vector4 padding; // padding is in css's order, so {x=top, y=right, z=bottom, w=left}. Vector4 is used for convenience.
     Vector2 minSize;
     Vector2 maxSize;
     Vector2 scroll;
@@ -89,6 +89,8 @@ typedef struct layout_t
     ChildLayoutAxis childLayoutAxis;
     int xScrollEnabled;
     int yScrollEnabled;
+    int textLength;
+    const char* text;
 } Layout;
 
 

@@ -67,6 +67,7 @@ void SetChildLayoutAxis(ChildLayoutAxis value);
 void SetText(const char* value, int textLength, float fontSize, float lineSpacing);
 void SetScrollEnabled(int x, int y);
 void SetDraw(DrawFunc value);
+
 void UpdateLayout(void);
 
 void Draw(void);

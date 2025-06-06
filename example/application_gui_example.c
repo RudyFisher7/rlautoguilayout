@@ -56,6 +56,7 @@ int main() {
     TextArgs args3 = {RAYWHITE, 20, "Hello raylib!"};
     TextureArgs args5 = {ninePatchRectTexture, RAYWHITE};
     NPatchTextureArgs args6 = {(NPatchInfo){(Rectangle){0.0f, 0.0f, 0.0f, 0.0f}, 16, 16, 16, 16, NPATCH_NINE_PATCH}, ninePatchRectTexture, RAYWHITE};
+    TextArgs args7 = {BLUE, 20, "Hello raylib! Super long text to debug text wrapping. Text is wrapping. Is text wrapping?"};
     GuiTextArgs args4 = {0, "Hello raygui!"};
 
     GUI_ROOT {
@@ -119,25 +120,33 @@ int main() {
                     SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN});
                     SetChildSpacing(4.0f);
                     SetPaddingAll(8.0f);
-                    SetScrollEnabled(1, 1);
-                    SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args4});
+//                    SetScrollEnabled(1, 1);
+//                    SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args4});
 
                     GUI {
-                        SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
-                        SetMaxSize((Vector2){600.0f, 600.0f});
-                        SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
+                        SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+                        SetMinSizeX(200.0f);
+//                        SetMaxSize((Vector2){500.0f, 500.0f});
+                        SetText(args7.text, (int)TextLength(args7.text), 20, 4.0f);
+                        SetDraw((DrawFunc){&rlautoDrawWrappedText, (void*)&args7});
                     }
 
-                    const int navigationLinks2 = 4;
-                    int navLinks2[4];
-                    for (int i = 0; i < navigationLinks2; ++i) {
-                        GUI {
-                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
-                            SetMaxSize((Vector2){1000.0f, 100.0f});
-                            SetMarginsAll(24.0f);
-                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
-                        }
-                    }
+//                    GUI {
+//                        SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+//                        SetMaxSize((Vector2){600.0f, 600.0f});
+//                        SetDraw((DrawFunc){&rlautoDrawTextureNPatch, (void*)&args6});
+//                    }
+//
+//                    const int navigationLinks2 = 4;
+//                    int navLinks2[4];
+//                    for (int i = 0; i < navigationLinks2; ++i) {
+//                        GUI {
+//                            SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
+//                            SetMaxSize((Vector2){1000.0f, 100.0f});
+//                            SetMarginsAll(24.0f);
+//                            SetDraw((DrawFunc){&rlautoDrawRectangle, (void*)&args2});
+//                        }
+//                    }
                 }
             }
         }

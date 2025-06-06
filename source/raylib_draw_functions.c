@@ -25,17 +25,13 @@
 
 #include "rlauto_layout/raylib_draw_functions.h"
 
+#include <string.h>
+
 
 void rlautoDrawLine(Layout *layout, void *args)
 {
     Args *argData = (Args*)args;
-    DrawLine(
-            (int)layout->bounds.x,
-            (int)layout->bounds.y,
-            (int)layout->bounds.x + (int)layout->bounds.width,
-            (int)layout->bounds.y,
-            argData->color
-    );
+    DrawLine((int)layout->bounds.x, (int)layout->bounds.y, (int)layout->bounds.x + (int)layout->bounds.width, (int)layout->bounds.y, argData->color);
 }
 
 void rlautoDrawRectangle(Layout *layout, void *args)
@@ -59,7 +55,30 @@ void rlautoDrawText(Layout *layout, void *args)
 void rlautoDrawWrappedText(Layout *layout, void *args)
 {
     TextArgs *argData = (TextArgs*)args;
-    DrawText(argData->text, (int)layout->bounds.x, (int)layout->bounds.y, argData->fontSize, argData->color);
+
+    const char* current_text = argData->text;
+    int text_length = strlen(current_text);
+    float font_width = argData->fontSize;
+    int codepoint_count_per_line = (int)(layout->bounds.width / font_width);
+    Vector2 current_position = {layout->bounds.x, layout->bounds.y};
+    int i = 0;
+    while (i < text_length) {
+        int current_codepoint_length = 0;
+        int codepoint = GetCodepointNext(current_text, &current_codepoint_length);
+        DrawTextCodepoint(GetFontDefault(), codepoint, current_position, argData->fontSize, argData->color);
+
+        current_position.x += font_width;
+        i += current_codepoint_length;
+
+        if (i % codepoint_count_per_line == 0) {
+            current_position.y += argData->fontSize * 2.0f;
+            current_position.x = layout->bounds.x;
+        }
+
+        current_text += current_codepoint_length;
+    }
+
+//    DrawText(argData->text, (int)layout->bounds.x, (int)layout->bounds.y, argData->fontSize, argData->color);
 }
 
 void rlautoDrawTexture(Layout *layout, void *args)

@@ -65,7 +65,9 @@ static const Layout DefaultNodeLayout = {
         {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
         CHILD_LAYOUT_AXIS_X,
         0,
-        0
+        0,
+        0,
+        NULL
 };
 
 static int currentIndex = 0;
@@ -224,7 +226,9 @@ void BeginHBox()
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
                     CHILD_LAYOUT_AXIS_X,
                     0,
-                    0
+                    0,
+                    0,
+                    NULL
             },
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -257,7 +261,9 @@ void BeginVBox()
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
                     CHILD_LAYOUT_AXIS_Y,
                     0,
-                    0
+                    0,
+                    0,
+                    NULL
             },
             (DrawFunc){&PassThroughDraw, NULL},
             currentNode,
@@ -403,11 +409,11 @@ void SetChildLayoutAxis(ChildLayoutAxis value)
 }
 
 void SetText(const char* value, int textLength, float fontSize, float lineSpacing)
-{// fixme::
-//    currentNode->layout.text = value;
+{
     currentNode->layout.fontSize = fontSize;
     currentNode->layout.lineSpacing = lineSpacing;
-//    currentNode->layout.textLength = textLength;
+    currentNode->layout.textLength = textLength;
+    currentNode->layout.text = value;
 }
 
 void SetScrollEnabled(int x, int y)
@@ -595,7 +601,10 @@ static void UpdateFitWidthContainer(Node* node)
 
 static void UpdateFitWidthChild(Node* node)
 {
-    node->layout.bounds.width = node->layout.minSize.x;
+//    if (!node->layout.text)
+    {
+        node->layout.bounds.width = node->layout.minSize.x;
+    }
 }
 
 static void UpdateGrowWidths()
@@ -766,15 +775,14 @@ static void UpdateGrowWidthChildren(Node* node)
 
 static void UpdateTextWrapping()
 {
-    return;
     for (int i = 0; i < treeSize; ++i)
     {
         Node* current = bFSTree[i];
 
-//        if (current->layout.text)
-//        {
-//            UpdateTextWrappingHelper(current);
-//        }
+        if (current->layout.text)
+        {
+            UpdateTextWrappingHelper(current);
+        }
     }
 }
 
@@ -791,20 +799,20 @@ static void UpdateTextWrappingHelper(Node* node)
     int charCountPerLine = (int)(node->layout.bounds.width / fontWidth);
     int i = charCountPerLine - 1;
     int previousI = -1;
-//    while (i > previousI && i < node->layout.textLength)
-//    {
-//        while (i > previousI && !isspace(node->layout.text[i]))
-//        {
-//            --i;
-//        }
-//
-//        if (i > previousI)
-//        {
-//            ++lineCount;
-//            previousI = i;
-//            i += charCountPerLine;
-//        }
-//    }
+    while (i > previousI && i < node->layout.textLength)
+    {
+        while (i > previousI && !isspace(node->layout.text[i]))
+        {
+            --i;
+        }
+
+        if (i > previousI)
+        {
+            ++lineCount;
+            previousI = i;
+            i += charCountPerLine;
+        }
+    }
 
     node->layout.bounds.height = fminf(
             (float)(
@@ -904,7 +912,10 @@ static void UpdateFitHeightContainer(Node* node)
 
 static void UpdateFitHeightChild(Node* node)
 {
-    node->layout.bounds.height = node->layout.minSize.y;
+    if (!node->layout.text)
+    {
+        node->layout.bounds.height = node->layout.minSize.y;
+    }
 }
 
 static void UpdateGrowHeights()

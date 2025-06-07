@@ -55,30 +55,108 @@ void rlautoDrawText(Layout *layout, void *args)
 void rlautoDrawWrappedText(Layout *layout, void *args)
 {
     TextArgs *argData = (TextArgs*)args;
+    Font font = GetFontDefault();
+    float charSpacing = 8.0f;
 
-    const char* current_text = argData->text;
-    int text_length = strlen(current_text);
-    float font_width = argData->fontSize;
-    int codepoint_count_per_line = (int)(layout->bounds.width / font_width);
-    Vector2 current_position = {layout->bounds.x, layout->bounds.y};
-    int i = 0;
-    while (i < text_length) {
-        int current_codepoint_length = 0;
-        int codepoint = GetCodepointNext(current_text, &current_codepoint_length);
-        DrawTextCodepoint(GetFontDefault(), codepoint, current_position, argData->fontSize, argData->color);
+    int codepointCount = 0;
+    int *codepoints = LoadCodepoints(layout->text, &codepointCount);
+    int *currentCodepoints = codepoints;
+    int currentIndex = 0;
+    float width = 0.0f;
 
-        current_position.x += font_width;
-        i += current_codepoint_length;
+    Vector2 position = {layout->bounds.x, layout->bounds.y};
+    for (int i = 0; i < codepointCount; ++i)
+    {
+        if (codepoints[i] == '\n')
+        {
+            width = 0.0f;
+            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->lineSpacing, argData->color);
 
-        if (i % codepoint_count_per_line == 0) {
-            current_position.y += argData->fontSize * 2.0f;
-            current_position.x = layout->bounds.x;
+            position.y += layout->fontSize + layout->lineSpacing;
+            currentCodepoints = (codepoints + i + 1);
+            currentIndex = i;
+
+            ++i;
         }
 
-        current_text += current_codepoint_length;
+        int glyphIndex = GetGlyphIndex(font, codepoints[i]);
+
+        float nextWidth = 0.0f;
+        if ((i + 1) < codepointCount)
+        {
+            int nextGlyphIndex = GetGlyphIndex(font, codepoints[i + 1]);
+            nextWidth = (float)font.recs[nextGlyphIndex].width + charSpacing;
+        }
+
+        width += (float)font.recs[glyphIndex].width + charSpacing;
+
+        if ((width + nextWidth) > layout->bounds.width)
+        {
+            width = 0.0f;
+
+            if ((i + 1) < codepointCount)
+            {
+                while (codepoints[i] != ' ' && codepoints[i] != '\t')
+                {
+                    --i;
+                }
+
+                while (codepoints[i] == ' ' || codepoints[i] == '\t')
+                {
+                    --i;
+                }
+            }
+
+            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->lineSpacing, argData->color);
+            ++i;
+
+            while (codepoints[i] == ' ' || codepoints[i] == '\t')
+            {
+                if (codepoints[i] == ' ')
+                {
+                    int ii = 0;
+                }
+                else if (codepoints[i] == '\t')
+                {
+                    int ii = 0;
+                }
+                ++i;
+            }
+
+            position.y += layout->fontSize + layout->lineSpacing;
+            currentCodepoints = (codepoints + i);
+            currentIndex = i;
+        }
+        else if ((i + 1) >= codepointCount)
+        {
+            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->lineSpacing, argData->color);
+        }
     }
 
-//    DrawText(argData->text, (int)layout->bounds.x, (int)layout->bounds.y, argData->fontSize, argData->color);
+    UnloadCodepoints(codepoints);
+
+
+//    const char* current_text = argData->text;
+//    int text_length = strlen(current_text);
+//    float font_width = argData->fontSize;
+//    int codepoint_count_per_line = (int)(layout->bounds.width / font_width);
+//    Vector2 current_position = {layout->bounds.x, layout->bounds.y};
+//    int i = 0;
+//    while (i < text_length) {
+//        int current_codepoint_length = 0;
+//        int codepoint = GetCodepointNext(current_text, &current_codepoint_length);
+//        DrawTextCodepoint(GetFontDefault(), codepoint, current_position, argData->fontSize, argData->color);
+//
+//        current_position.x += font_width;
+//        i += current_codepoint_length;
+//
+//        if (i % codepoint_count_per_line == 0) {
+//            current_position.y += argData->fontSize * 2.0f;
+//            current_position.x = layout->bounds.x;
+//        }
+//
+//        current_text += current_codepoint_length;
+//    }
 }
 
 void rlautoDrawTexture(Layout *layout, void *args)

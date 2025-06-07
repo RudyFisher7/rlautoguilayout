@@ -56,7 +56,7 @@ int main() {
     TextArgs args3 = {RAYWHITE, 20, "Hello raylib!"};
     TextureArgs args5 = {ninePatchRectTexture, RAYWHITE};
     NPatchTextureArgs args6 = {(NPatchInfo){(Rectangle){0.0f, 0.0f, 0.0f, 0.0f}, 16, 16, 16, 16, NPATCH_NINE_PATCH}, ninePatchRectTexture, RAYWHITE};
-    TextArgs args7 = {BLUE, 20, "Hello raylib! Super long text to debug text wrapping. Text is wrapping. Is text wrapping?"};
+    TextArgs args7 = {BLUE, 20, "Hello raylib! Super long\ntext to debug text wrapping.\t \tText is wrapping. Is text wrapping?"};
     GuiTextArgs args4 = {0, "Hello raygui!"};
 
     GUI_ROOT {
@@ -119,16 +119,21 @@ int main() {
                     SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
                     SetChildAlignment((Vector2UInt8){CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN});
                     SetChildSpacing(4.0f);
-                    SetPaddingAll(8.0f);
+                    SetPaddingY((Vector2){32.0f, 0.0f});
 //                    SetScrollEnabled(1, 1);
 //                    SetDraw((DrawFunc){&rlautoGuiScrollPanel, (void*)&args4});
 
                     GUI {
                         SetSizeFlagsBoth(SIZE_FLAGS_GROW);
-                        SetMinSizeX(200.0f);
-//                        SetMaxSize((Vector2){500.0f, 500.0f});
+                        SetMinSize((Vector2){200.0f, 200.0f});
+                        SetMaxSize((Vector2){700.0f, 600.0f});
                         SetText(args7.text, (int)TextLength(args7.text), 20, 4.0f);
                         SetDraw((DrawFunc){&rlautoDrawWrappedText, (void*)&args7});
+
+                        GUI {
+                            SetSizeFlagsBoth(SIZE_FLAGS_GROW);
+                            SetDraw((DrawFunc){&rlautoDrawRectangleLines, (void*)&args1});
+                        }
                     }
 
 //                    GUI {

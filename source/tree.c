@@ -548,7 +548,7 @@ static void UpdateFitWidths()
 static void UpdateFitWidthContainer(Node* node)
 {
     float width = 0.0f;
-    node->layout.minSize.x = 0.0f;
+    float nodeMinSizeX = 0.0f;
     Node* current = node->firstChild;
     if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_X)
     {
@@ -562,7 +562,8 @@ static void UpdateFitWidthContainer(Node* node)
             // propogate min widths up the tree, unless this node is a scroll container
             if (!node->layout.xScrollEnabled)
             {
-                node->layout.minSize.x += layout->minSize.x + layout->margins.y + layout->margins.w;
+                nodeMinSizeX += layout->minSize.x + layout->margins.y + layout->margins.w;
+                node->layout.minSize.x = fmaxf(nodeMinSizeX, node->layout.minSize.x);
             }
 
             ++childCount;
@@ -788,39 +789,72 @@ static void UpdateTextWrapping()
 
 static void UpdateTextWrappingHelper(Node* node)
 {
-    // fixme:: this algorithm only works when all codepoints are 1 byte/char. utf-8 uses variable length codepoints
-    //use font size for the width for now.
-    // usually you would find the width of each codepoint
-    // but that might cause a cache miss due to accessing heap memory
-    float fontWidth = node->layout.fontSize;
+    Font font = GetFontDefault();
+    float charSpacing = 8.0f;
 
-    //font width * char count = width
+    int codepointCount = 0;
+    int *codepoints = LoadCodepoints(node->layout.text, &codepointCount);
+
     int lineCount = 1;
-    int charCountPerLine = (int)(node->layout.bounds.width / fontWidth);
-    int i = charCountPerLine - 1;
-    int previousI = -1;
-    while (i > previousI && i < node->layout.textLength)
-    {
-        while (i > previousI && !isspace(node->layout.text[i]))
-        {
-            --i;
-        }
 
-        if (i > previousI)
+    float width = 0.0f;
+    float height = 0.0f;
+    for (int i = 0; i < codepointCount; ++i)
+    {
+        int glyphIndex = GetGlyphIndex(font, codepoints[i]);
+        width += (float)font.recs[glyphIndex].width + charSpacing;
+
+        if (width > node->layout.bounds.width)
         {
             ++lineCount;
-            previousI = i;
-            i += charCountPerLine;
+            width = 0.0f;
+
+            if ((i + 1) < codepointCount)
+            {
+                while (codepoints[i] != ' ')
+                {
+                    --i;
+                }
+            }
+        }
+        else if ((i + 1) >= codepointCount)
+        {
+            ++lineCount;
         }
     }
 
-    node->layout.bounds.height = fminf(
-            (float)(
-                    (node->layout.fontSize * lineCount)
-                    + (node->layout.lineSpacing * (lineCount - 1))
-            ),
-            node->layout.maxSize.y
-    );
+    height += ((node->layout.fontSize + node->layout.lineSpacing) * (float)(lineCount - 1)) + node->layout.fontSize;
+
+    UnloadCodepoints(codepoints);
+
+//    // fixme:: this algorithm only works when all codepoints are 1 byte/char. utf-8 uses variable length codepoints
+//    //use font size for the width for now.
+//    // usually you would find the width of each codepoint
+//    // but that might cause a cache miss due to accessing heap memory
+//    float fontWidth = node->layout.fontSize;
+//
+//    //font width * char count = width
+//    int lineCount = 1;
+//    int charCountPerLine = (int)(node->layout.bounds.width / fontWidth);
+//    int i = charCountPerLine - 1;
+//    int previousI = -1;
+//    while (i > previousI && i < node->layout.textLength)
+//    {
+//        while (i > previousI && !isspace(node->layout.text[i]))
+//        {
+//            --i;
+//        }
+//
+//        if (i > previousI)
+//        {
+//            ++lineCount;
+//            previousI = i;
+//            i += charCountPerLine;
+//        }
+//    }
+//
+//    node->layout.bounds.height = fminf(height, node->layout.maxSize.y);
+    node->layout.bounds.height = height;
 }
 
 static void UpdateFitHeights()
@@ -858,7 +892,7 @@ static void UpdateFitHeights()
 static void UpdateFitHeightContainer(Node* node)
 {
     float height = 0.0f;
-    node->layout.minSize.y = 0.0f;
+    float nodeMinSizeY = 0.0f;
     Node* current = node->firstChild;
     if (node->layout.childLayoutAxis == CHILD_LAYOUT_AXIS_Y)
     {
@@ -872,7 +906,8 @@ static void UpdateFitHeightContainer(Node* node)
             // propogate min heights up the tree
             if (!node->layout.yScrollEnabled)
             {
-                node->layout.minSize.y += layout->minSize.y + layout->margins.x + layout->margins.z;
+                nodeMinSizeY += layout->minSize.y + layout->margins.x + layout->margins.z;
+                node->layout.minSize.y = fmaxf(nodeMinSizeY, node->layout.minSize.y);
             }
 
             ++childCount;

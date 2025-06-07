@@ -70,7 +70,14 @@ void rlautoDrawRectangleLines(Layout *layout, void *args);
 
 /* Text Drawing */
 void rlautoDrawText(Layout *layout, void *args);
-void rlautoDrawWrappedText(Layout *layout, void *args);//TODO::
+
+/**
+ * Draws wrapped text.
+ * @note The algorithm trims trailing horizontal white space, but preserves leading horizontal white space.
+ * @param layout
+ * @param args
+ */
+void rlautoDrawWrappedText(Layout *layout, void *args);
 
 /* Texture Drawing */
 void rlautoDrawTexture(Layout *layout, void *args);

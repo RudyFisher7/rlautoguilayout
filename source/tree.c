@@ -801,6 +801,13 @@ static void UpdateTextWrappingHelper(Node* node)
     float height = 0.0f;
     for (int i = 0; i < codepointCount; ++i)
     {
+        if (codepoints[i] == '\n')
+        {
+            width = 0.0f;
+            ++lineCount;
+            ++i;
+        }
+
         int glyphIndex = GetGlyphIndex(font, codepoints[i]);
         width += (float)font.recs[glyphIndex].width + charSpacing;
 
@@ -811,10 +818,17 @@ static void UpdateTextWrappingHelper(Node* node)
 
             if ((i + 1) < codepointCount)
             {
-                while (codepoints[i] != ' ')
+                while (codepoints[i] != ' ' && codepoints[i] != '\t')
                 {
                     --i;
                 }
+
+                while (codepoints[i] == ' ' || codepoints[i] == '\t')
+                {
+                    ++i;
+                }
+
+                --i;
             }
         }
         else if ((i + 1) >= codepointCount)

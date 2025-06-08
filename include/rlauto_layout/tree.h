@@ -81,8 +81,9 @@ void Draw(void);
 void PassThroughDraw(Layout *layout, void *args);
 
 
-#define GUI_ROOT static int rlautoMacroIndex = 0;\
-    BeginRoot();\
+static int rlautoMacroIndex = 0;
+
+#define GUI_ROOT BeginRoot();\
     for (rlautoMacroIndex = 0; rlautoMacroIndex < 1; ++rlautoMacroIndex, EndRoot())
 
 #define GUI Begin();\

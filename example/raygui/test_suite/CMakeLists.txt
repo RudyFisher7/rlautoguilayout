@@ -21,39 +21,17 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.26)
-project(rlautolayoutexample)
+project(rlautolayoutrayguittextsuiteexample)
 
-
-set(RESOURCE_DIR
-        "${CMAKE_SOURCE_DIR}/resource"
-)
-
-add_definitions(-DRESOURCE_DIR=\"${RESOURCE_DIR}\")
 
 set(LIBS
         rlautolayout
 )
 
-
-#set(CENTERED_MENU_BUTTONS_EXAMPLE rlautolayoutcenteredmenubuttonsexample)
-#
-#add_executable(${CENTERED_MENU_BUTTONS_EXAMPLE}
-#        centered_menu_buttons_example.c
-#)
-#
-#target_link_libraries(${CENTERED_MENU_BUTTONS_EXAMPLE} PUBLIC
-#        ${LIBS}
-#)
-
-
-set(APPLICATION_GUI_EXAMPLE rlautolayoutapplicationguiexample)
-
-add_executable(${APPLICATION_GUI_EXAMPLE}
-        application_gui_example.c
+add_executable(${PROJECT_NAME}
+        test_suite_example.c
 )
 
-target_link_libraries(${APPLICATION_GUI_EXAMPLE} PUBLIC
+target_link_libraries(${PROJECT_NAME} PUBLIC
         ${LIBS}
 )
-
-add_subdirectory(raygui)

@@ -38,14 +38,51 @@ extern "C" {
 #endif
 
 
+typedef struct gui_style_args_t
+{
+    int setStyle;
+    int restoreStyle;
+    int styleControl;
+    int styleProperty;
+    int styleValue;
+} GuiStyleArgs;
+
 typedef struct gui_text_args_t
 {
+    GuiStyleArgs styleArgs;
     int returnedValue;
+    int outValue;
     const char* text;
 } GuiTextArgs;
 
 
+typedef struct gui_edit_mode_args_t
+{
+    GuiStyleArgs styleArgs;
+    int returnedValue;
+    int outValue;
+    bool editMode;
+    const char* text;
+} GuiEditModeArgs;
+
+
+typedef struct gui_all_args_t
+{
+    GuiStyleArgs styleArgs;
+    int returnedValue;
+    int outValue;
+    int minValue;
+    int maxValue;
+    bool editMode;
+    const char* text;
+} GuiAllArgs;
+
+
 void rlautoGuiButton(Layout *layout, void *args);
+void rlautoGuiCheckBox(Layout *layout, void *args);
+void rlautoGuiDropdownBox(Layout *layout, void *args);
+void rlautoGuiSpinner(Layout *layout, void *args);
+void rlautoGuiValueBox(Layout *layout, void *args);
 void rlautoGuiScrollPanel(Layout *layout, void *args);
 
 

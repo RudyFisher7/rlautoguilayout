@@ -28,17 +28,106 @@
 #ifndef RAYGUI_IMPLEMENTATION
 #define RAYGUI_IMPLEMENTATION
 #endif
+
 #include <raygui.h>
+
+
+inline static void HandleSetGuiStyle(GuiStyleArgs *args, int *outPreviousValue)
+{
+    if (args->setStyle)
+    {
+        if (args->restoreStyle)
+        {
+            *outPreviousValue = GuiGetStyle(args->styleControl, args->styleProperty);
+        }
+
+        GuiSetStyle(args->styleControl, args->styleProperty, args->styleValue);
+    }
+}
+
+inline static void HandleRestoreGuiStyle(GuiStyleArgs *args, int previousValue)
+{
+    if (args->restoreStyle)
+    {
+        GuiSetStyle(args->styleControl, args->styleProperty, previousValue);
+    }
+}
+
+
+#define HANDLE_SET_STYLE(args) int prevValue = 0; HandleSetGuiStyle(args, &prevValue)
+#define HANDLE_RESTORE_STYLE(args) HandleRestoreGuiStyle(args, prevValue)
 
 
 void rlautoGuiButton(Layout *layout, void *args)
 {
     GuiTextArgs *argData = (GuiTextArgs*)args;
+
+    HANDLE_SET_STYLE(&argData->styleArgs);
+
     argData->returnedValue = GuiButton(layout->bounds, argData->text);
+
+    HANDLE_RESTORE_STYLE(&argData->styleArgs);
+}
+
+void rlautoGuiCheckBox(Layout *layout, void *args)
+{
+    GuiTextArgs *argData = (GuiTextArgs*)args;
+
+    HANDLE_SET_STYLE(&argData->styleArgs);
+
+    bool forceChecked = argData->outValue;
+
+    argData->returnedValue = GuiCheckBox(layout->bounds, argData->text, &forceChecked);
+
+    argData->outValue = forceChecked;
+
+    HANDLE_RESTORE_STYLE(&argData->styleArgs);
+}
+
+void rlautoGuiDropdownBox(Layout *layout, void *args)
+{
+    GuiEditModeArgs *argData = (GuiEditModeArgs*)args;
+
+    HANDLE_SET_STYLE(&argData->styleArgs);
+
+    argData->returnedValue = GuiDropdownBox(layout->bounds, argData->text, &argData->outValue, argData->editMode);
+
+    HANDLE_RESTORE_STYLE(&argData->styleArgs);
+}
+
+void rlautoGuiSpinner(Layout *layout, void *args)
+{
+    GuiAllArgs *argData = (GuiAllArgs*)args;
+
+    HANDLE_SET_STYLE(&argData->styleArgs);
+
+    argData->returnedValue = GuiSpinner(layout->bounds, argData->text, &argData->outValue, argData->minValue, argData->maxValue, argData->editMode);
+
+    HANDLE_RESTORE_STYLE(&argData->styleArgs);
+}
+
+void rlautoGuiValueBox(Layout *layout, void *args)
+{
+    GuiAllArgs *argData = (GuiAllArgs*)args;
+
+    HANDLE_SET_STYLE(&argData->styleArgs);
+
+    argData->returnedValue = GuiValueBox(layout->bounds, argData->text, &argData->outValue, argData->minValue, argData->maxValue, argData->editMode);
+
+    HANDLE_RESTORE_STYLE(&argData->styleArgs);
 }
 
 void rlautoGuiScrollPanel(Layout *layout, void *args)
 {
     GuiTextArgs *argData = (GuiTextArgs*)args;
+
+    HANDLE_SET_STYLE(&argData->styleArgs);
+
     argData->returnedValue = GuiScrollPanel(layout->bounds, argData->text, layout->scrollContentBounds, &layout->scroll, &layout->scrollView);
+
+    HANDLE_RESTORE_STYLE(&argData->styleArgs);
 }
+
+
+#undef HANDLE_SET_STYLE
+#undef HANDLE_RESTORE_STYLE

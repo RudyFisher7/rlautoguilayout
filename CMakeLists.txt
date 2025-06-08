@@ -76,6 +76,7 @@ if(NOT raygui_POPULATED)
     # the above commands don't seem to work with raygui for some reason.
     # add the CMake project directory directly for now.
     add_subdirectory("${CMAKE_BINARY_DIR}/_deps/raygui-src/projects/CMake")
+    set(RAYGUI_STYLES_DIR "${CMAKE_BINARY_DIR}/_deps/raygui-src/examples/styles")
 else()
     message(STATUS "${PROJECT_NAME}: raygui already available.")
 endif()
@@ -106,6 +107,7 @@ add_library(${PROJECT_NAME} STATIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         include
+        ${RAYGUI_STYLES_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC

@@ -64,7 +64,7 @@ void SetSizeFlagX(uint8_t value);
 void SetSizeFlagY(uint8_t value);
 void SetChildAlignment(Vector2UInt8 value);
 void SetChildLayoutAxis(ChildLayoutAxis value);
-void SetText(const char* value, int textLength, float fontSize, float lineSpacing);
+void SetText(const char* value, int textLength, float fontSize, float charSpacing, float lineSpacing);
 void SetScrollEnabled(int x, int y);
 void SetDraw(DrawFunc value);
 

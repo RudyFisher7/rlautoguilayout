@@ -56,8 +56,8 @@ void rlautoDrawWrappedText(Layout *layout, void *args)
 {
     TextArgs *argData = (TextArgs*)args;
     Font font = GetFontDefault();//fixme:: put this in layout
-    float charSpacing = 8.0f;//fixme:: put this in layout
 
+    float scaleFactor = layout->fontSize / (float)font.baseSize;
     int codepointCount = 0;
     int *codepoints = LoadCodepoints(layout->text, &codepointCount);
     int *currentCodepoints = codepoints;
@@ -70,7 +70,7 @@ void rlautoDrawWrappedText(Layout *layout, void *args)
         if (codepoints[i] == '\n')
         {
             width = 0.0f;
-            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->lineSpacing, argData->color);
+            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->charSpacing, argData->color);
 
             position.y += layout->fontSize + layout->lineSpacing;
             currentCodepoints = (codepoints + i + 1);
@@ -85,10 +85,25 @@ void rlautoDrawWrappedText(Layout *layout, void *args)
         if ((i + 1) < codepointCount && (codepoints[i + 1] != ' ' && codepoints[i + 1] != '\t'))
         {
             int nextGlyphIndex = GetGlyphIndex(font, codepoints[i + 1]);
-            nextWidth = (float)font.recs[nextGlyphIndex].width + charSpacing;
+
+            if (font.glyphs[nextGlyphIndex].advanceX == 0)
+            {
+                nextWidth = ((float)font.recs[nextGlyphIndex].width * scaleFactor) + layout->charSpacing;
+            }
+            else
+            {
+                nextWidth = ((float)font.glyphs[nextGlyphIndex].advanceX * scaleFactor) + layout->charSpacing;
+            }
         }
 
-        width += (float)font.recs[glyphIndex].width + charSpacing;
+        if (font.glyphs[glyphIndex].advanceX == 0)
+        {
+            width += ((float)font.recs[glyphIndex].width * scaleFactor) + layout->charSpacing;
+        }
+        else
+        {
+            width += ((float)font.glyphs[glyphIndex].advanceX * scaleFactor) + layout->charSpacing;
+        }
 
         if ((width + nextWidth) > layout->bounds.width)
         {
@@ -107,7 +122,7 @@ void rlautoDrawWrappedText(Layout *layout, void *args)
                 }
             }
 
-            DrawTextCodepoints(font, currentCodepoints, (i + 1 - currentIndex), position, layout->fontSize, layout->lineSpacing, argData->color);
+            DrawTextCodepoints(font, currentCodepoints, (i + 1 - currentIndex), position, layout->fontSize, layout->charSpacing, argData->color);
             ++i;
 
             while (codepoints[i] == ' ' || codepoints[i] == '\t')
@@ -121,7 +136,7 @@ void rlautoDrawWrappedText(Layout *layout, void *args)
         }
         else if ((i + 1) >= codepointCount)
         {
-            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->lineSpacing, argData->color);
+            DrawTextCodepoints(font, currentCodepoints, (i - currentIndex), position, layout->fontSize, layout->charSpacing, argData->color);
         }
     }
 

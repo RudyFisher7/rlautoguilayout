@@ -127,7 +127,7 @@ int main() {
                         SetSizeFlags((Vector2UInt8){SIZE_FLAGS_GROW, SIZE_FLAGS_GROW});
                         SetMinSize((Vector2){200.0f, 50.0f});
                         SetMaxSize((Vector2){700.0f, 600.0f});
-                        SetText(args7.text, (int)TextLength(args7.text), 20, 4.0f);
+                        SetText(args7.text, (int)TextLength(args7.text), 20, 4.0f, 4.0f);
                         SetDraw((DrawFunc){&rlautoDrawWrappedText, (void*)&args7});
 
                         GUI {

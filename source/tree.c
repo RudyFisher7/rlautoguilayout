@@ -61,6 +61,7 @@ static const Layout DefaultNodeLayout = {
         0.0f,
         0.0f,
         0.0f,
+        0.0f,
         {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
         {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
         CHILD_LAYOUT_AXIS_X,
@@ -222,6 +223,7 @@ void BeginHBox()
                     0.0f,
                     0.0f,
                     0.0f,
+                    0.0f,
                     {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
                     CHILD_LAYOUT_AXIS_X,
@@ -253,6 +255,7 @@ void BeginVBox()
                     {0.0f, 0.0f},
                     {FLT_MAX, FLT_MAX},
                     {0.0f, 0.0f},
+                    0.0f,
                     0.0f,
                     0.0f,
                     0.0f,
@@ -408,9 +411,10 @@ void SetChildLayoutAxis(ChildLayoutAxis value)
     currentNode->layout.childLayoutAxis = value;
 }
 
-void SetText(const char* value, int textLength, float fontSize, float lineSpacing)
+void SetText(const char* value, int textLength, float fontSize, float charSpacing, float lineSpacing)
 {
     currentNode->layout.fontSize = fontSize;
+    currentNode->layout.charSpacing = charSpacing;
     currentNode->layout.lineSpacing = lineSpacing;
     currentNode->layout.textLength = textLength;
     currentNode->layout.text = value;
@@ -790,8 +794,8 @@ static void UpdateTextWrapping()
 static void UpdateTextWrappingHelper(Node* node)
 {
     Font font = GetFontDefault();
-    float charSpacing = 8.0f;
 
+    float scaleFactor = node->layout.fontSize / (float)font.baseSize;
     int codepointCount = 0;
     int *codepoints = LoadCodepoints(node->layout.text, &codepointCount);
 
@@ -809,7 +813,14 @@ static void UpdateTextWrappingHelper(Node* node)
         }
 
         int glyphIndex = GetGlyphIndex(font, codepoints[i]);
-        width += (float)font.recs[glyphIndex].width + charSpacing;
+        if (font.glyphs[glyphIndex].advanceX == 0)
+        {
+            width += ((float)font.recs[glyphIndex].width * scaleFactor) + node->layout.charSpacing;
+        }
+        else
+        {
+            width += ((float)font.glyphs[glyphIndex].advanceX * scaleFactor) + node->layout.charSpacing;
+        }
 
         if (width > node->layout.bounds.width)
         {

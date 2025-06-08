@@ -83,6 +83,7 @@ typedef struct layout_t
     float childSpacing;
     float fontSize;
     float lineSpacing;
+    float charSpacing;
     float wrappedTextSizeV;
     Vector2UInt8 sizeFlags;
     Vector2UInt8 childAlignment;

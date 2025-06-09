@@ -40,12 +40,13 @@
 #endif
 
 #ifndef RLAUTO_LAYOUT_TREE_CAPACITY
-#define RLAUTO_LAYOUT_TREE_CAPACITY 32
+#define RLAUTO_LAYOUT_TREE_CAPACITY 256
 #endif
 
 #ifndef RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE
 #define RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE 1
 #endif
+
 
 // Data used inside this translation unit.
 static const Layout DefaultNodeLayout = {
@@ -68,6 +69,7 @@ static const Layout DefaultNodeLayout = {
         0,
         0,
         0,
+        0,
         NULL
 };
 
@@ -75,7 +77,8 @@ static int currentIndex = 0;
 static int treeSize = 0;
 static Node* currentNode = NULL;
 static Node tree[RLAUTO_LAYOUT_TREE_CAPACITY];
-static Node* bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
+static Node *bFSTree[RLAUTO_LAYOUT_TREE_CAPACITY];
+static Node *expandedNode = NULL;
 
 static int isScissorModeActive = 0;
 static int scissorStackTop = -1;
@@ -160,6 +163,8 @@ static void SetChildrenXEndAlongX(Node*);
 static void SetChildrenYEndAlongX(Node*);
 static void SetChildrenXEndAlongY(Node*);
 static void SetChildrenYEndAlongY(Node*);
+static void UpdateExpanded(void);
+static void DrawExpanded(void);
 static int AreEqualApproxF(float, float);
 static void PushScissor(Rectangle*);
 static void PopScissor(void);
@@ -230,6 +235,7 @@ void BeginHBox()
                     0,
                     0,
                     0,
+                    0,
                     NULL
             },
             (DrawFunc){&PassThroughDraw, NULL},
@@ -263,6 +269,7 @@ void BeginVBox()
                     {SIZE_FLAGS_FIT, SIZE_FLAGS_FIT},
                     {CHILD_ALIGNMENT_BEGIN, CHILD_ALIGNMENT_BEGIN},
                     CHILD_LAYOUT_AXIS_Y,
+                    0,
                     0,
                     0,
                     0,
@@ -465,6 +472,7 @@ static void AssembleBFSTree() {
 static void BeginInternal() {
     Node* current = GET(currentIndex);
 
+    DEBUG_DATA
     // if there is a current parent
     if (currentNode) {
 
@@ -490,7 +498,6 @@ static void BeginInternal() {
     currentNode = current;
 
     ++currentIndex;
-    DEBUG_DATA
 }
 
 static void EndInternal() {
@@ -515,6 +522,7 @@ void UpdateLayout()
     UpdateFitHeights();
     UpdateGrowHeights();
     UpdatePositionsAndAlignment();
+    UpdateExpanded();
 }
 
 static void UpdateFitWidths()
@@ -1472,7 +1480,7 @@ static void SetChildrenYCenterAlongY(Node* current)
 
     childHeights += current->layout.padding.x + current->layout.padding.z;
     while (currentChild)
-{
+    {
         childHeights += (
                 currentChild->layout.bounds.height
                 + currentChild->layout.margins.x
@@ -1488,7 +1496,7 @@ static void SetChildrenYCenterAlongY(Node* current)
 
     float currentY = current->layout.scroll.y;
     switch (current->layout.sizeFlags.y)
-{
+    {
         case SIZE_FLAGS_FIT:
             currentY += current->layout.bounds.y + current->layout.padding.x;
             break;
@@ -1502,10 +1510,10 @@ static void SetChildrenYCenterAlongY(Node* current)
 
     currentChild = current->firstChild;
     while (currentChild)
-{
+    {
         float topMarginAdjustment = currentChild->layout.margins.x;
         if (currentChild->leftSibling)
-{
+        {
             topMarginAdjustment += current->layout.childSpacing;
         }
 
@@ -1580,14 +1588,37 @@ static void SetChildrenXEndAlongY(Node* current)
     }
 }
 
+static void UpdateExpanded()
+{
+    Node *node = GET(0);
+    int i = 1;
+    while (!node->layout.isExpanded && i < RLAUTO_LAYOUT_TREE_CAPACITY)
+    {
+        node = GET(i++);
+    }
+
+    if (i < RLAUTO_LAYOUT_TREE_CAPACITY)
+    {
+        expandedNode = node;
+    }
+    else
+    {
+        expandedNode = NULL;
+    }
+}
+
 void Draw()
 {
     DrawInternal(GET(0));
+    DrawExpanded();
 }
 
 static void DrawInternal(Node* current)
 {
-    current->drawFunc.draw(&current->layout, current->drawFunc.args);
+    if (!current->layout.isExpanded)
+    {
+        current->drawFunc.draw(&current->layout, current->drawFunc.args);
+    }
 
     int isScrollContainer = current->layout.xScrollEnabled || current->layout.yScrollEnabled;
     if (isScrollContainer)
@@ -1620,6 +1651,14 @@ static void DrawInternal(Node* current)
         EndScissorMode();
         isScissorModeActive = 0;
 //        PopScissor();
+    }
+}
+
+static void DrawExpanded()
+{
+    if (expandedNode)
+    {
+        expandedNode->drawFunc.draw(&expandedNode->layout, expandedNode->drawFunc.args);
     }
 }
 

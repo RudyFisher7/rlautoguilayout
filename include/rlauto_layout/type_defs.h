@@ -91,6 +91,7 @@ typedef struct layout_t
     int xScrollEnabled;
     int yScrollEnabled;
     int textLength;
+    int isExpanded;
     const char* text;
 } Layout;
 

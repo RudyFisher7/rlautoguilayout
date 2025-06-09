@@ -24,6 +24,11 @@ cmake_minimum_required(VERSION 3.26)
 project(rlautolayoutrayguittextsuiteexample)
 
 
+add_compile_definitions(
+        RLAUTO_LAYOUT_TREE_CAPACITY=64
+        RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE=0
+)
+
 set(LIBS
         rlautolayout
 )

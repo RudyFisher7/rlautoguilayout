@@ -23,7 +23,6 @@
  */
 
 
-
 #include "rlauto_layout/tree.h"
 #include "rlauto_layout/raylib_draw_functions.h"
 #include "rlauto_layout/raygui_draw_functions.h"
@@ -57,7 +56,7 @@ int main() {
     TextureArgs args5 = {ninePatchRectTexture, RAYWHITE};
     NPatchTextureArgs args6 = {(NPatchInfo){(Rectangle){0.0f, 0.0f, 0.0f, 0.0f}, 16, 16, 16, 16, NPATCH_NINE_PATCH}, ninePatchRectTexture, RAYWHITE};
     TextArgs args7 = {BLUE, 20, "\tHello raylib! Super long text to debug text wrapping.\t \tText is wrapping. Is text wrapping?\n\tThis is a new paragraph"};
-    GuiTextArgs args4 = {0, "Hello raygui!"};
+    GuiArgs args4 = {0, "Hello raygui!"};
 
     GUI_ROOT {
         GUI_VBOX {

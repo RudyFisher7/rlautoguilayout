@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_out/cmake-build-debug/_deps/raygui-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/_out/cmake-build-debug/_deps/raylib-src" vcs="Git" />
   </component>
 </project>

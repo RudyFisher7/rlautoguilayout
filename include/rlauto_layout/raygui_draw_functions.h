@@ -38,6 +38,13 @@ extern "C" {
 #endif
 
 
+typedef struct gui_state_args_t
+{
+    int set;
+    int restore;
+    int value;
+} GuiStateArgs;
+
 typedef struct gui_style_args_t
 {
     int setStyle;
@@ -47,43 +54,126 @@ typedef struct gui_style_args_t
     int styleValue;
 } GuiStyleArgs;
 
-typedef struct gui_text_args_t
+
+typedef struct gui_args_t
 {
     GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
     int returnedValue;
     int outValue;
     const char* text;
+} GuiArgs;
+
+typedef struct gui_grid_args_t
+{
+    GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
+    Vector2 mouseCell;
+    int returnedValue;
+    float spacing;
+    int subdivs;
+    const char* text;
+} GuiGridArgs;
+
+typedef struct gui_color_args_t
+{
+    GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
+    int returnedValue;
+    Color outValue;
+    const char* text;
+} GuiColorArgs;
+
+typedef struct gui_out_values_args_t
+{
+    GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
+    int returnedValue;
+    int outValues[2];
+    const char* text;
+} GuiOutValuesArgs;
+
+typedef struct gui_out_values_args_ex_t
+{
+    GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
+    int returnedValue;
+    int outValues[3];
+    int itemCount;
+    const char** text;
+} GuiOutValuesArgsEx;
+
+typedef struct gui_text_args_t
+{
+    GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
+    int returnedValue;
+    int textSize;
+    bool editMode;
+    char* text;
 } GuiTextArgs;
 
 
 typedef struct gui_edit_mode_args_t
 {
     GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
     int returnedValue;
     int outValue;
     bool editMode;
     const char* text;
 } GuiEditModeArgs;
 
-
 typedef struct gui_all_args_t
 {
     GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
     int returnedValue;
     int outValue;
     int minValue;
     int maxValue;
     bool editMode;
     const char* text;
+    const char* textRight;
 } GuiAllArgs;
 
 
+typedef struct gui_all_args_f_t
+{
+    GuiStyleArgs styleArgs;
+    GuiStateArgs stateArgs;
+    int returnedValue;
+    float outValue;
+    float minValue;
+    float maxValue;
+    bool editMode;
+    float textWidth;
+    float rightTextWidth;
+    const char* text;
+    const char* rightText;
+} GuiAllArgsF;
+
+
+void rlautoGuiControl(Layout *layout, void *args);
+void rlautoGuiGroupBox(Layout *layout, void *args);
+void rlautoGuiPanel(Layout *layout, void *args);
 void rlautoGuiButton(Layout *layout, void *args);
+void rlautoGuiToggleGroup(Layout *layout, void *args);
+void rlautoGuiToggleSlider(Layout *layout, void *args);
 void rlautoGuiCheckBox(Layout *layout, void *args);
+void rlautoGuiComboBox(Layout *layout, void *args);
 void rlautoGuiDropdownBox(Layout *layout, void *args);
 void rlautoGuiSpinner(Layout *layout, void *args);
 void rlautoGuiValueBox(Layout *layout, void *args);
+void rlautoGuiTextBox(Layout *layout, void *args);
+void rlautoGuiSlider(Layout *layout, void *args);
+void rlautoGuiSliderBar(Layout *layout, void *args);
+void rlautoGuiProgressBar(Layout *layout, void *args);
+void rlautoGuiGrid(Layout *layout, void *args);
 void rlautoGuiScrollPanel(Layout *layout, void *args);
+void rlautoGuiListView(Layout *layout, void *args);
+void rlautoGuiListViewEx(Layout *layout, void *args);
+void rlautoGuiColorPicker(Layout *layout, void *args);
 
 
 #ifdef __cplusplus

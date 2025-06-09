@@ -29,6 +29,16 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 option(ENABLE_TESTS "Enable unit tests" ON)
 option(ENABLE_EXAMPLES "Enable examples" ON)
 
+if(NOT DEFINED RLAUTO_LAYOUT_TREE_CAPACITY)
+    set(RLAUTO_LAYOUT_TREE_CAPACITY 256)
+    message(STATUS "Configuring without -DRLAUTO_LAYOUT_TREE_CAPACITY=<int>. Setting to ${RLAUTO_LAYOUT_TREE_CAPACITY} as default.")
+endif()
+
+if(NOT DEFINED RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE)
+    set(RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE 0)
+    message(STATUS "Configuring without -DRLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE=<1 or 0>. Setting to ${RLAUTO_LAYOUT_TREE_INDEX_MODE_SAFE} as default.")
+endif()
+
 if(ENABLE_TESTS)
     include(CTest)
     enable_testing()
@@ -108,6 +118,10 @@ add_library(${PROJECT_NAME} STATIC
 target_include_directories(${PROJECT_NAME} PUBLIC
         include
         ${RAYGUI_STYLES_DIR}
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+        RLAUTO_LAYOUT_TREE_CAPACITY=${RLAUTO_LAYOUT_TREE_CAPACITY}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC

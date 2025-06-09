@@ -1,4 +1,6 @@
 # Raylib Auto GUI Layout Library
+
+### Discord: https://discord.gg/NMxxQK9kZt
 ![img.png](img.png)
 A C99 library designed to be used with Raylib and Raygui for creating immediate mode responsive GUI.
 

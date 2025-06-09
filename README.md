@@ -3,7 +3,7 @@
 A C99 library designed to be used with Raylib and Raygui for creating immediate mode responsive GUI.
 
 ## Notice
-This project is early in development and may be missing vital functionality. Please feel free to contribute a PR or report bugs with MRPs attached.
+This project is early in development and may be missing desired functionality, though the layout algorithm should be complete enough to use in a project. Please feel free to contribute a PR or report bugs with MRPs attached.
 Also, if you find something with this library that makes it in any way janky to work with, please submit your feedback!
 
 ## Credits
@@ -18,3 +18,8 @@ So why create this library if Clay already exists? First and foremost, because N
 ## Usage
 Using CMake, add this to your project with add_subdirectory(rlautolayout) or similar.
 See CMakePresets.json and the example/ folder for more information.
+
+## Library Structure
+rlauto is made of 2 basic components:
+1. A tree structure as implemented in tree.h and tree.c. This implements all the layout logic and simply calls draw callbacks. This is meant to be mostly self-contained and have no dependencies except for the c std library. Currently some Raylib structs are needed but could easily be defined with a few tweaks within the library if desired.
+2. A collection of draw callbacks. These are the actual draw calls that will display the GUI. These are functions of type void(Layout*, void*). Theoretically, a developer could define their own draw calls that don't depend on Raylib at all (some typedefs are missing for this, but should be trivial to add if desired). raylib_draw_functions.h and raygui_draw_functions.h implement Raylib-specific draw calls for use with the layout tree. Note that, though these are draw calls, they can actually contain any logic needed to be executed during the drawing step and don't need to actually draw anything if not needed.

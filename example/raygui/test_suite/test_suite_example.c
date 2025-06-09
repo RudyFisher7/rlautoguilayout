@@ -23,25 +23,22 @@
  */
 
 
+/*
+ * This example is inspired by Raygui's controls_test_suite example.
+ */
+
 #include "rlauto_layout/tree.h"
 #include "rlauto_layout/raygui_draw_functions.h"
+
 #include <raylib.h>
-
-//#ifndef RAYGUI_IMPLEMENTATION
-//#define RAYGUI_IMPLEMENTATION
-//#endif
-
 #include <raygui.h>
 
-// raygui embedded styles
 #include <style_cyber.h>
 #include <style_jungle.h>
 #include <style_lavanda.h>
 #include <style_dark.h>
 #include <style_bluish.h>
 #include <style_terminal.h>
-
-#include <stdio.h>
 
 
 void UpdateSliderValueText(GuiAllArgsF *args)

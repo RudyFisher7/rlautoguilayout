@@ -4,7 +4,7 @@ A C99 library designed to be used with Raylib and Raygui for creating immediate 
 
 ## Notice
 This project is early in development and may be missing desired functionality, though the layout algorithm should be complete enough to use in a project. Please feel free to contribute a PR or report bugs with MRPs attached.
-Also, if you find something with this library that makes it in any way janky to work with, please submit your feedback!
+Also, if you find something with this library that makes it in any way janky to work with, please submit your feedback! Part of the goal of this library is for my own learning, so your outside perspective is greatly appreciated!
 
 ## Credits
 A big thanks and credit extended to Nic Barker, creator of Clay.h and his wonderful educational video on the topic. His library also supports Raylib and is highly recommended. (You will likely find no need for this library at all if you check out his, honestly.) Go use it! It is also likely that Clay computes layout faster than this library (TODO:: micro-benchmarks).
